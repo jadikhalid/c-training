@@ -1,3 +1,16 @@
-*.o
+*.out
+
+# Windows
 *.exe
+*.dll
+
+# Fichiers Objets
+*.o
+*.obj
+
+# --- Configuration IDE ---
 .vscode/
+
+# Fichiers temporaires Linux et logs
+*.log
+.DS_Store
