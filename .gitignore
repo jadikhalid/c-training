@@ -1,3 +1,12 @@
+# Ignorer tous les fichiers par défaut dans le dossier de build (ou racine)
+*
+
+# Ne pas ignorer les fichiers avec des extensions (fichiers sources, headers, etc.)
+!*.*
+
+# Ne pas ignorer les répertoires (pour pouvoir naviguer dans l'arborescence)
+!*/
+
 *.out
 
 # Windows
