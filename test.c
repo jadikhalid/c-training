@@ -1,7 +1,20 @@
+/*perroquet.c : ce programme repete ce qu'il vient de lire au clavier*/
+#include <stdlib.h>
 #include <stdio.h>
 
-int main()
+int lire_clavier(char *str, int taille)
 {
-  printf("Coucou, World!\n");
-  return 0;
+  int i;
+  fgets(str, taille, stdin);
+  str[taille - 1] = '\0';
+  for (i = 0; str[i]; i++)
+  {
+    if (str[i] == '\n')
+    {
+      /* code */
+      str[i] = '\0';
+      break;
+    }
+  }
+  return i;
 }
