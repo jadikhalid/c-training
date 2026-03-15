@@ -1,14 +1,15 @@
-/*perroquet.c : ce programme repete ce qu'il vient de lire au clavier*/
-#include <stdlib.h>
+/* List_it.c ce programme affiche du code source avec
+les numéros de lignes. */
+
 #include <stdio.h>
-#include "utilitaires.h"
+#include <stdlib.h>
 
-int produit(int x, int y);
+void display_usage(void);
 
-int main()
+int line;
+
+int main(int argc, char *argv[])
 {
-  int a, b, c;
-  // Lecture du premier nombre
-  printf('Entrez un nomre entre 1 et 100 : ');
-  scanf("%d", &a);
+  char buffer[256];
+  FILE *fp;
 }
