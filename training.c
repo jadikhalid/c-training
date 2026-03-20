@@ -1,25 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define GRAMMES_PAR_LIVRE 454
-const int DEBUT_SIECLE = 2000;
+#define SECS_PER_MIN 60
+#define SECS_PER_HOUR 3600
 
-int poids_en_grammes, poids_en_livres;
-int an_naissance, age_en_2000;
-
+int x, y;
 int main()
 {
-  printf("Entrez votre poids en livres :");
-  scanf("%d", &poids_en_livres);
-  printf("Entrez votre an de naissance :");
-  scanf("%d", &an_naissance);
+  int status;
 
-  poids_en_grammes = poids_en_livres * GRAMMES_PAR_LIVRE;
-  age_en_2000 = DEBUT_SIECLE - an_naissance;
+  do
+  {
+    printf("\nEntrez une valeur entière pour x : : ");
+    status = scanf("%d", &x);
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+      ;
+    if (status != 1)
+    {
+      printf("Saisie invalide. Veuillez recommencer.\n");
+    }
+  } while (status != 1);
 
-  printf("Poids en livres : %d\n", poids_en_livres);
-  printf("Poids en grammes : %d\n", poids_en_grammes);
-  printf("An de naissance : %d\n", an_naissance);
-  printf("Age en 2000 : %d\n", age_en_2000);
+  do
+  {
+    printf("\nEntrez une valeur entière pour y : : ");
+    status = scanf("%d", &y);
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+      ;
+    if (status != 1)
+    {
+      printf("Saisie invalide. Veuillez recommencer.\n");
+    }
+  } while (status != 1);
+
+  if (x == y)
+    printf("x et y sont égaux\n");
+
+  if (x > y)
+    printf("x est plus grand que y\n");
+
+  if (x < y)
+    printf("x est plus petit que y\n");
+
   exit(EXIT_SUCCESS);
 }
