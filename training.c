@@ -1,48 +1,39 @@
+/*Programme : trouver_nombre.c
+* Objectif : Ce programme choisit un nombre de facon aléatoire
+*            et demmade l'utilisateur de le trouver
+* Retour : aucun
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-#define SECS_PER_MIN 60
-#define SECS_PER_HOUR 3600
+#define NO 0
+#define YES (!NO)
 
-int x, y;
-int main()
-{
-  int status;
+int main(void) {
+  int guess_Value = -1;
+  int nombre;
+  int nbr_of_gueses;
+  int done = NO;
 
-  do
-  {
-    printf("\nEntrez une valeur entière pour x : : ");
-    status = scanf("%d", &x);
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-      ;
-    if (status != 1)
-    {
-      printf("Saisie invalide. Veuillez recommencer.\n");
+  printf("Selection d'un nombre aleatoire\n");
+  srand(time(NULL));
+  nombre = rand();
+
+  nbr_of_gueses = 0;
+  while (done == NO) {
+    printf("\nDonnez un nombre entre 0 et %d\n", RAND_MAX);
+    scanf("%d", &guess_Value);
+    nbr_of_gueses++;
+    if(nombre == guess_Value) {
+      done = YES;
+    }else {
+      nombre<=guess_Value ? printf("Trop grand\n") : printf("Trop petit\n");
     }
-  } while (status != 1);
+}
 
-  do
-  {
-    printf("\nEntrez une valeur entière pour y : : ");
-    status = scanf("%d", &y);
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-      ;
-    if (status != 1)
-    {
-      printf("Saisie invalide. Veuillez recommencer.\n");
-    }
-  } while (status != 1);
-
-  if (x == y)
-    printf("x et y sont égaux\n");
-
-  if (x > y)
-    printf("x est plus grand que y\n");
-
-  if (x < y)
-    printf("x est plus petit que y\n");
-
-  exit(EXIT_SUCCESS);
+printf("\nVous avez trouve en %d essais\n", nbr_of_gueses);
+printf("Le nombre etait %d\n", nombre);
+return 0;
 }
