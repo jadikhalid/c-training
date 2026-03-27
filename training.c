@@ -1,51 +1,110 @@
 /*
-* Exemple d'utilisation de la fonction scanf()
+* Nom du programme : week1.c
+* Ce programme permet de saisir l'age et le revenu
+* de 100 personnes au maximum. Il affihce ensuite
+* les resultats obtenus
 */
 
-#include<stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-#define QUIT 4
+#define MAX 100
+#define OUI 1
+#define NON 0
 
-int choix_menu(void);
+long revenu[MAX];
+int mois[MAX], jour[MAX], annee[MAX];
 
-int main () {
-  int choix =0;
-  int var_int = 0;
-  float var_float =0.0;
-  unsigned var_unsigned = 0;
+int x,y,ctr;
+int cont;
+long total_mois, grand_total;
 
-  while (choix != QUIT){
-    choix = choix_menu();
-    if (choix ==1) {
-      puts("\nEntrez un entier décimal signé (ex -123)");
-      scanf("%d", &var_int);
-    }
-    if (choix ==2) {
-      puts("\nEntrez un nombre avec virgule flotante (ex 1.23)");
-      scanf("%f", &var_float);
-    }
-    if (choix ==3) {
-      puts("\nEntrez un nombre entier non signé (ex 123)");
-      scanf("%u", &var_unsigned);
-    }
-  }
-  printf("\nVos valeurs sont : int: %d float :%f unsigner : %u\n", var_int, var_float, var_unsigned);
-  return 0;
+int affiche_instructions(void);
+void lecture(void);
+void affiche_result(void);
+int continuer(void);
+
+int main(void) {
+  cont = affiche_instructions();
+
+  if (cont == OUI) {
+    lecture();
+    affiche_result();
+  }else 
+    printf("\nProgramme interrompu pa l'utilisateur !\n\n");
+    exit(EXIT_SUCCESS);
 }
 
-int choix_menu(void){
-  int selection =0;
+int affiche_instructions(void) {
+  printf("\n\n");
+  printf("\nCe programme vous permet de saisir le revenu et");
+  printf("\nla date de naissance de 99 personnes maxi, pour");
+  printf("\ncalculer et afficher le total des revenus mois par mois,");
+  printf("\nle total annuel des revenus, et la moyenne de ces revenus.");
+  printf("\n");
 
-  do {
-    puts("\n1- Lire un entier décimal signé");
-    puts("2- Lire un nombre avec virgule flotante");
-    puts("3- Lire un entier décimal non signé");
-    puts("4- Quitter\n");
-    puts("Votre choix : ");
-    scanf("%d", &selection);
-  } while (selection < 1 || selection > QUIT);
-  
+  cont =continuer();
+  return cont;
+}
 
-  return selection;
+void lecture(void) {
+  for (cont = OUI, ctr =0; ctr<MAX && cont == OUI; ctr++) {
+    printf("\nENtrez les informations pour la personne no %d", ctr+1);
+    printf("\n\ntDate de naissance :");
+
+    do {
+      printf("\n\tMois (0-12) :");
+      scanf("%d", &mois[ctr]);
+    }while (mois[ctr] < 0 || mois[ctr] > 12);
+
+    do {
+      printf("\n\tJour (1-31) :");
+      scanf("%d", &jour[ctr]);
+    }while (jour[ctr] < 1 || jour[ctr] > 31);
+
+    do {
+      printf("\n\tAnnee (0-1994) :");
+      scanf("%d", &annee[ctr]);
+    }while (annee[ctr] < 0 || annee[ctr] > 1944);
+    printf("\nEntrez le revenu annuel :");
+    scanf("%ld", &revenu[ctr]);
+
+    cont =continuer();
+  }
+}
+
+void affiche_result() {
+  grand_total = 0;
+  printf("\n\n\n");
+  printf("\n    Salaires");
+  printf("\n    ========");
+
+  for(x=0; x<=12; x++) {
+    total_mois = 0;
+    for(y=0; y<ctr; y++) {
+      if (mois[y] == x)
+        total_mois = total_mois + revenu[y];
+    }
+    printf("\nLe total pour le mois %d est %ld", x, total_mois);
+    grand_total += total_mois;
+  }
+  printf("\n\n\nLe total des revenus est de %ld", grand_total);
+  printf("\nLa moyenne des revenus est de %ld", grand_total/ctr);  
+
+  printf("\n\n***fin des resultats***");
+}
+
+int continuer(void) {
+  printf("\nnVOulez vous continuer? (0=non / 1=oui) :");
+  scanf("%d", &x);
+
+  while (x<0 || x>1) {
+    printf("\n%d est erroné !", x);
+    printf("\nEntrez 0 pour sortier ou 1 pour continuer :");
+    scanf("%d", &x);
+  }
+  if (x ==0)
+  return NON;
+  else
+  return OUI;
 }
