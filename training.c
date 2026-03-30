@@ -1,25 +1,34 @@
 /*
-* 
+* passer un tableau a une fonction
+* en tant qu'argument : pointeur+taille
 */
 
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 
-int tab[12][10];
+#define MAX 10
 
-int main() {
-    for (int i = 0; i < 12; i++) {
-        for (int j = 0; j < 10; j++) {
-            tab[i][j] = rand();
-        }
-    }
+int tab[MAX], count;
 
-    for (int i = 0; i < 12; i++) {
-        for (int j = 0; j < 10; j++) {
-            printf("%d ", tab[i][j]);
-        }
-        printf("\n");
-    }
+int largest(int x[], int y);
 
-    return 0;
+int main () {
+    for (count=0; count<MAX; count++) {
+        printf("Entrez un entier : ");
+        scanf("%d", &tab[count]);}
+
+        printf("\n\nLa valeur la lus grande est : %d\n ", largest(tab, MAX));
+
+        return 0;
+    
+}
+
+int largest(int x[], int y) {
+    int count, biggest=x[0];
+
+    for(count=1; count < y; count++)
+        if (x[count] > biggest)
+            biggest = x[count];
+    return biggest;
+
 }
