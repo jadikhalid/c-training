@@ -1,14 +1,12 @@
-/*
-* Nature numérique des variables char
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 
-unsigned char x;
+char input[81];
 
 int main() {
-   for (x=180; x<204; x++) {
-    printf("%c = %d\n", x, x);
-   }
+   puts("Saisissez votre texte, puis qppuyez uer ENtree");
+   fgets(input, sizeof(input), stdin);
+   printf("Vous avez saisi : %s\n", input);
+
+   exit(EXIT_SUCCESS);
 }
