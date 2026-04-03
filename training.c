@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-char lmom[81], fnom[81];
-int count, id_num;
+char tableau1[] = "Hello, World!";
+char tableau2[20];
+
+char *d = tableau2;
 
 int main() {
-   puts("Entrez votre nom, prenom et matricule separes");
-   puts("par des espaces et appuyez sur entrée");
-
-   count = scanf("%80s%80s%d", lmom, fnom, &id_num);
-
-   printf("%d", count);
-
-   return 0;
+   for (char *p = tableau1; *p != '\0'; p++) {
+         *d = *p;
+         d++;
+   } 
+   *d = '\0'; // Null-terminate the second string
+   printf("Tableau 1: %s\n", tableau1);
+   printf("Tableau 2: %s\n", tableau2);
+    return 0;
 }
