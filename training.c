@@ -1,19 +1,22 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-
-char tableau1[] = "Hello, World!";
-char tableau2[20];
-
-char *d = tableau2;
-
 int main() {
-   for (char *p = tableau1; *p != '\0'; p++) {
-         *d = *p;
-         d++;
-   } 
-   *d = '\0'; // Null-terminate the second string
-   printf("Tableau 1: %s\n", tableau1);
-   printf("Tableau 2: %s\n", tableau2);
-    return 0;
+      const char chaine1[] = "Hello, World! My name is John.";
+      const char chaine2[] = "Welcome to C programming.";
+
+      size_t len1 = strlen(chaine1);
+      size_t len2 = strlen(chaine2);
+
+      printf("Length of chaine1: %zu\n", len1);
+      printf("Length of chaine2: %zu\n", len2);
+
+      if (len1 != len2) {
+            const char *p = (len1 > len2) ? chaine1 : chaine2;
+            printf("The longer string is: %s\n", p);
+      } else {
+            printf("Both strings have the same length.\n");
+      }
+
+      return 0;
 }
+
