@@ -1,22 +1,36 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
+
+int longuer, largeur;
+long aire;
+
+struct coord{
+      int x;
+      int y;
+};
+
+struct rectangel {
+      struct coord hautgauche;
+      struct coord basdroite;
+} maboite;
+
 int main() {
-      const char chaine1[] = "Hello, World! My name is John.";
-      const char chaine2[] = "Welcome to C programming.";
+      printf("\nEntrez la coordonnée x du coin superieur gauche de la boite : ");
+      scanf("%d", &maboite.hautgauche.x);
 
-      size_t len1 = strlen(chaine1);
-      size_t len2 = strlen(chaine2);
+      printf("\nEntrez la coordonnée y du coin superieur gauche de la boite : ");
+      scanf("%d", &maboite.hautgauche.y);
 
-      printf("Length of chaine1: %zu\n", len1);
-      printf("Length of chaine2: %zu\n", len2);
+      printf("\nEntrez la coordonnée x du coin inferieur droit de la boite : ");
+      scanf("%d", &maboite.basdroite.x);
 
-      if (len1 != len2) {
-            const char *p = (len1 > len2) ? chaine1 : chaine2;
-            printf("The longer string is: %s\n", p);
-      } else {
-            printf("Both strings have the same length.\n");
-      }
+      printf("\nEntrez la coordonnée y du coin inferieur droit de la boite : ");
+      scanf("%d", &maboite.basdroite.y);
 
-      return 0;
+      /* Calcul et affichage de l'aire */
+      longuer = maboite.basdroite.x - maboite.hautgauche.x;
+      largeur = maboite.hautgauche.y - maboite.basdroite.y;
+      aire = longuer * largeur;
+      printf("\nL'aire de la boite est : %ld\n", aire);
+      return 0;   
 }
-
