@@ -1,36 +1,34 @@
+/*
+ * Exemple de déplacement dans un
+ * tableau de structures
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
-int longuer, largeur;
-long aire;
+#define MAX 4
 
-struct coord{
-      int x;
-      int y;
-};
+struct part
+{
+  int nombre;
+  char nom[10];
+} data[MAX] = {
+    {1, "smith"},
+    {2, "Jones"},
+    {3, "Adams"},
+    {4, "Wilson"}};
 
-struct rectangel {
-      struct coord hautgauche;
-      struct coord basdroite;
-} maboite;
+struct part *p_part;
+int count;
 
-int main() {
-      printf("\nEntrez la coordonnée x du coin superieur gauche de la boite : ");
-      scanf("%d", &maboite.hautgauche.x);
+int main()
+{
+  p_part = data;
 
-      printf("\nEntrez la coordonnée y du coin superieur gauche de la boite : ");
-      scanf("%d", &maboite.hautgauche.y);
-
-      printf("\nEntrez la coordonnée x du coin inferieur droit de la boite : ");
-      scanf("%d", &maboite.basdroite.x);
-
-      printf("\nEntrez la coordonnée y du coin inferieur droit de la boite : ");
-      scanf("%d", &maboite.basdroite.y);
-
-      /* Calcul et affichage de l'aire */
-      longuer = maboite.basdroite.x - maboite.hautgauche.x;
-      largeur = maboite.hautgauche.y - maboite.basdroite.y;
-      aire = longuer * largeur;
-      printf("\nL'aire de la boite est : %ld\n", aire);
-      return 0;   
+  for (count = 0; count < MAX; count++)
+  {
+    printf("A l'adresse %p : %d %s\n", (void *)p_part, p_part->nombre, p_part->nom);
+    p_part++;
+  }
+  exit(EXIT_SUCCESS);
 }
