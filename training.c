@@ -1,34 +1,67 @@
 /*
- * Exemple de déplacement dans un
- * tableau de structures
+ * xemple typique d'utilisation d'une union
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX 4
+#define CARACTERE 'C'
+#define INTEGER 'I'
+#define FLOAT 'F'
 
-struct part
+struct generic_tag
 {
-  int nombre;
-  char nom[10];
-} data[MAX] = {
-    {1, "smith"},
-    {2, "Jones"},
-    {3, "Adams"},
-    {4, "Wilson"}};
+  /* data */
+  char type;
+  union shared_tag
+  {
+    /* data */
+    char c;
+    int i;
+    float f;
+  } shared;
+};
 
-struct part *p_part;
-int count;
+void print_fonction(struct generic_tag generic);
 
 int main()
 {
-  p_part = data;
+  struct generic_tag var;
 
-  for (count = 0; count < MAX; count++)
+  var.type = CARACTERE;
+  var.shared.c = '$';
+  print_fonction(var);
+
+  var.type = FLOAT;
+  var.shared.f = (float)12345.67890;
+  print_fonction(var);
+
+  var.type = 'x';
+  var.shared.i = 111;
+  print_fonction(var);
+
+  return 0;
+}
+
+void print_fonction(struct generic_tag generic)
+{
+  printf("\nLa valeur generique est ...");
+  switch (generic.type)
   {
-    printf("A l'adresse %p : %d %s\n", (void *)p_part, p_part->nombre, p_part->nom);
-    p_part++;
+  case CARACTERE:
+    printf("%c", generic.shared.c);
+    break;
+
+  case INTEGER:
+    printf("%d", generic.shared.i);
+    break;
+
+  case FLOAT:
+    printf("%f", generic.shared.f);
+    break;
+
+  default:
+    printf("de type inconnu : %c\n", generic.type);
+    break;
   }
-  exit(EXIT_SUCCESS);
 }
