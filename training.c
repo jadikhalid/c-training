@@ -1,20 +1,28 @@
+/*
+ * Exemple de variables locales statiques et automatiques
+ */
+
 #include <stdio.h>
-struct data
-{
-  int membre1;
-  float membre2, membre3;
-};
+#include <stdlib.h>
 
-struct data info = {
-    100,
-    2,
-    3.6};
-
-struct data *ptr = &info;
+void fonc1(void);
 
 int main()
 {
-  (*ptr).membre1 = 10;
-  printf("%d", (*ptr).membre1);
-  return 0;
+  int count;
+
+  for (count=0; count<20;count++){
+    printf("Iteration numero %d", count);
+    fonc1();
+  }
+
+  exit(EXIT_SUCCESS);
+}
+
+
+void fonc1(void) {
+  static int x =0;
+  int y = 0;
+
+  printf("x = %d, y = %d\n", x++, y++);
 }
