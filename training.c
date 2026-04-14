@@ -1,28 +1,27 @@
-/*
- * Exemple de variables locales statiques et automatiques
- */
-
 #include <stdio.h>
-#include <stdlib.h>
 
-void fonc1(void);
+void exemple_de_fonction(void)
+{
+  int ctr1;
+  for (ctr1 = 0; ctr1 < 25; ctr1++)
+    printf("*");
+
+  puts("\nCela est un exemple de fonction");
+
+  // Bloc interne isolé
+  {
+    char star = '*'; // Utilisation de l'apostrophe droite
+    puts("il y a un problème");
+    for (int ctr2 = 0; ctr2 < 25; ctr2++)
+    {
+      printf("%c", star);
+    }
+    printf("\n");
+  }
+}
 
 int main()
 {
-  int count;
-
-  for (count=0; count<20;count++){
-    printf("Iteration numero %d", count);
-    fonc1();
-  }
-
-  exit(EXIT_SUCCESS);
-}
-
-
-void fonc1(void) {
-  static int x =0;
-  int y = 0;
-
-  printf("x = %d, y = %d\n", x++, y++);
+  exemple_de_fonction();
+  return 0;
 }
