@@ -1,27 +1,26 @@
+/*
+ * Programme coder.c
+ * Syntaxe : coder [monfichier] [action]
+ */
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void exemple_de_fonction(void)
+int encode_character(int ch, int val);
+int decode_character(int ch, int val);
+
+int main(int argc, char *argv[])
 {
-  int ctr1;
-  for (ctr1 = 0; ctr1 < 25; ctr1++)
-    printf("*");
+  FILE *fh;
+  int rv = 1;
+  int ch = 0;
+  unsigned int crt = 0;
+  int val = 5;
+  char buffer[257];
 
-  puts("\nCela est un exemple de fonction");
-
-  // Bloc interne isolé
+  if (argc != 3)
   {
-    char star = '*'; // Utilisation de l'apostrophe droite
-    puts("il y a un problème");
-    for (int ctr2 = 0; ctr2 < 25; ctr2++)
-    {
-      printf("%c", star);
-    }
-    printf("\n");
+    /* code */
   }
-}
-
-int main()
-{
-  exemple_de_fonction();
-  return 0;
 }
