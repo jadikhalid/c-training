@@ -1,92 +1,108 @@
 /*
- * Programme coder.c
- * Syntaxe : coder [monfichier] [action]
+ * Programme : coder_pro.c
+ * Syntaxe : ./coder_pro [fichier] [action: C ou D] [cle]
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int encode_character(int ch, int val);
-int decode_character(int ch, int val);
+// On passe le caractère, la clé complète, et la position actuelle
+int encode_character(int ch, const char *key, int pos);
+int decode_character(int ch, const char *key, int pos);
 
 int main(int argc, char *argv[])
 {
   FILE *fh;
-  int rv = 1;
   int ch = 0;
-  unsigned int crt = 0;
-  int val = 5;
+  int pos = 0;
   char buffer[257];
 
-  if (argc != 3)
+  if (argc != 4)
   {
-    printf("\nErreur: nombre de parametres incorecte ...");
-    printf("\n\nSyntaxe:\n %s nomfichier action", argv[0]);
-    printf("\n\n Ou:");
-    printf("\n nomfichier = nom du fichier a coder");
-    printf("\nou a decoder");
-    printf("\n action = D pour decoder ou C pour code \n\n");
-    rv = -1;
+    printf("\nErreur: Parametres manquants.");
+    printf("\nSyntaxe: %s [fichier] [action: C/D] [cle]\n", argv[0]);
+    return EXIT_FAILURE;
   }
-  else if ((argv[2][0] == 'D') || (argv[2][0] == 'd'))
+
+  char *key = argv[3];
+  char action = argv[2][0];
+
+  // MODE DECODAGE (Lecture du fichier existant)
+  if (action == 'D' || action == 'd')
   {
     fh = fopen(argv[1], "r");
-    if (fh == 0)
+    if (fh == NULL)
     {
-      printf("\n\nErreur d ouverture du fichier...");
-      rv = -2;
+      perror("\nErreur d'ouverture");
+      return EXIT_FAILURE;
     }
-    else
+
+    printf("--- Contenu Décodé ---\n");
+    while ((ch = fgetc(fh)) != EOF)
     {
-      ch = getc(fh);
-      while (!feof(fh))
+      // On ne décode pas le retour à la ligne pour garder la structure
+      if (ch == '\n')
       {
-        ch = decode_character(ch, val);
-        putchar(ch);
-        ch = getc(fh);
+        putchar('\n');
+        pos = 0; // Reset de la position de la clé par ligne
       }
-      fclose(fh);
-      printf("\n\nFichier deocdé et affiché.\n");
+      else
+      {
+        putchar(decode_character(ch, key, pos));
+        pos++;
+      }
     }
+    fclose(fh);
+    printf("\n----------------------\n");
   }
-  else
+  // MODE CODAGE (Création du fichier)
+  else if (action == 'C' || action == 'c')
   {
     fh = fopen(argv[1], "w");
-    if (fh == 0)
+    if (fh == NULL)
     {
-      printf("\n\nErreur pendant la creation du fichier...");
-      rv = -3;
+      perror("\nErreur de création");
+      return EXIT_FAILURE;
     }
-    else
+
+    printf("Entrez le texte a coder (Entree pour valider, Ligne vide pour finir) :\n");
+    while (fgets(buffer, sizeof(buffer), stdin))
     {
-      printf("\n\nEntrez le texte a coder...");
-      printf("\nEntrz une ligne vide pour terminer.\n\n");
-      while (fgets(buffer, sizeof(buffer), stdin))
+      if (buffer[0] == '\n')
+        break;
+
+      for (size_t i = 0; i < strlen(buffer); i++)
       {
-        if ((buffer[0] == 0) || (buffer[0] == '\n'))
-          break;
-        for (crt = 0; crt < strlen(buffer); crt++)
+        if (buffer[i] == '\n')
         {
-          ch = encode_character(buffer[crt], val);
-          ch = fputc(ch, fh);
+          fputc('\n', fh);
+          pos = 0;
+        }
+        else
+        {
+          ch = encode_character(buffer[i], key, pos);
+          fputc(ch, fh);
+          pos++;
         }
       }
-      printf("\n\nMessage codé et enregistré.\n");
-      fclose(fh);
     }
+    fclose(fh);
+    printf("\nMessage codé avec la clé '%s' et enregistré dans %s.\n", key, argv[1]);
   }
-  exit((rv == 1) ? EXIT_SUCCESS : EXIT_FAILURE);
+
+  return EXIT_SUCCESS;
 }
 
-int encode_character(int ch, int val)
+// Utilise la valeur ASCII du caractère de la clé pour le décalage + XOR
+int encode_character(int ch, const char *key, int pos)
 {
-  ch = ch + val;
-  return ch;
+  int k = key[pos % strlen(key)]; // On boucle sur la clé
+  return (ch + k) ^ k;            // Mélange complexe
 }
 
-int decode_character(int ch, int val)
+int decode_character(int ch, const char *key, int pos)
 {
-  ch = ch - val;
-  return ch;
+  int k = key[pos % strlen(key)];
+  return (ch ^ k) - k; // Inversion exacte
 }
