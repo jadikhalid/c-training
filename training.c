@@ -1,26 +1,66 @@
 /*
- * Exemple de l'utilisation de l'instruction continue
+ * Réalisation d'un menu systeme avec une boucle infinie
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "utilitaires.h"
+#include <unistd.h>
+
+int menu(void);
 
 int main()
 {
-  char buffer[81];
-  int ctr = 10;
+  int choix;
 
-  puts("Entrez une ligne de texte :");
-  lire_clavier(buffer, sizeof(buffer));
-
-  for (ctr = 0; buffer[ctr] != '\0'; ctr++)
+  while (1)
   {
-    if (buffer[ctr] == 'a' || buffer[ctr] == 'e' || buffer[ctr] == 'i' || buffer[ctr] == 'u' || buffer[ctr] == 'o')
-      continue;
-
-    putchar(buffer[ctr]);
+    choix = menu();
+    if (choix == 1)
+    {
+      puts("\nExécution de la tache correspondant au choix 1.");
+      sleep(5);
+    }
+    else if (choix == 2)
+    {
+      puts("\nExécution de la tache correspondant au choix 2.");
+      sleep(5);
+    }
+    else if (choix == 3)
+    {
+      puts("\nExécution de la tache correspondant au choix 3.");
+      sleep(5);
+    }
+    else if (choix == 4)
+    {
+      puts("\nExécution de la tache correspondant au choix 4.");
+      sleep(5);
+    }
+    else if (choix == 5)
+    {
+      puts("\nSortie du programme...\n");
+      sleep(5);
+      break;
+    }
+    else
+    {
+      puts("\nChoix incorrect, essayer de nouveau.");
+      sleep(5);
+    }
   }
-  printf("\n");
   return 0;
+}
+
+int menu(void)
+{
+  int reponse;
+
+  puts("\nEntrez 1 pour la teche A.");
+  puts("\nEntrez 2 pour la teche B.");
+  puts("\nEntrez 3 pour la teche C.");
+  puts("\nEntrez 4 pour la teche D.");
+  puts("\nEntrez 5 pour sortir du programme.");
+
+  scanf("%d", &reponse);
+
+  return reponse;
 }
