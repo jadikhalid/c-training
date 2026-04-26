@@ -1,28 +1,25 @@
 /*
- * Utilisation de getchar() pour lire
- * des chaines de caracteres
+ * Exmemple d'utliosation de la fonction fgets()
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX 80
+#define MAXLONG 10
 
 int main()
 {
-  int ch;
-  char buffer[MAX + 1];
-  int x = 0;
-
-  while ((ch = getchar()) != '\n' && ch != EOF && x < MAX)
-    buffer[x++] = ch;
-
-  buffer[x] = '\0';
-  puts("Codes ASCII saisis :");
-  printf("%s\n", buffer);
-  for (int i = 0; i < x; i++)
+  char buffer[MAXLONG];
+  puts("Entrez une ligne de texte à la fois, ou un blanc pour sortir.");
+  while (1)
   {
-    printf("%c: %d ", buffer[i], buffer[i]);
+    fgets(buffer, MAXLONG, stdin);
+    if (buffer[0] == '\n')
+    {
+      break;
+    }
+
+    puts(buffer);
   }
 
   return 0;
