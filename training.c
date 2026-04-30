@@ -1,22 +1,74 @@
+/*
+ * Utilisation de printf()
+ */
+
 #include <stdio.h>
+#include <stdlib.h>
+
+char *m1 = "Binaire";
+char *m2 = "Decimal";
+char *m3 = "Octal";
+char *m4 = "Hexadecimal";
 
 int main()
 {
-  unsigned int nombre = 255;
-  unsigned int couleur = 0x3A7F12;
+  float d1 = 10000.123;
+  int n, c;
 
-  printf("--- Comparaison minuscules / majuscules ---\n");
-  printf("En minuscules (%%x) : %x\n", nombre); // Affiche "ff"
-  printf("En majuscules (%%X) : %X\n", nombre); // Affiche "FF"
+  puts("Affichage d'un nombre avec plusieurs largeurs de champ");
+  printf("%5f\n", d1);
+  printf("%10f\n", d1);
+  printf("%15f\n", d1);
+  printf("%20f\n", d1);
+  printf("%25f\n", d1);
 
-  printf("\n--- Exemple avec un nombre plus grand ---\n");
-  printf("Code couleur (%%x) : %x\n", couleur); // Affiche "3a7f12"
-  printf("Code couleur (%%X) : %X\n", couleur); // Affiche "3A7F12"
+  puts("\n Appuyez sur entrée pour continuer ...");
 
-  // Astuce : Utiliser le flag '#' pour ajouter le préfixe '0x' automatiquement
-  printf("\n--- Avec le préfixe automatique ---\n");
-  printf("Format pro (%%#x) : %#x\n", couleur); // Affiche "0x3a7f12"
-  printf("Format pro (%%#X) : %#X\n", couleur); // Affiche "0X3A7F12"
+  while ((c = getchar()) != '\n' && c != EOF)
+    ;
+
+  getchar();
+
+  puts("\nOn utilise * pour la largeur de champ");
+  puts("d'une variable de la liste ds arguments.\n");
+
+  for (n = 5; n <= 25; n += 5)
+    printf("%*f\n", n, d1);
+
+  puts("\n Appuyez sur Entrée pour continuer...");
+
+  while ((c = getchar()) != '\n' && c != EOF)
+    ;
+
+  getchar();
+
+  puts("\n On complète avec des 0");
+
+  printf("%05f\n", d1);
+  printf("%010f\n", d1);
+  printf("%015f\n", d1);
+  printf("%020f\n", d1);
+  printf("%025f\n", d1);
+
+  puts("\n Appuyez sur Entrée pour continuer...");
+
+  while ((c = getchar()) != '\n' && c != EOF)
+    ;
+
+  getchar();
+
+  puts("\nAffichage en octal, decimal et hexadecimal.");
+
+  printf("%-15s%-15s%-15s", m2, m3, m4);
+
+  for (n = 1; n < 20; n++)
+    printf("\n%-15d%-#15o%-#15X", n, n, n);
+
+  puts("\n\nOn utilise la commande de conversion %n pour compter");
+  puts("les caracteres.\n");
+  printf("%s %s %s %s %n", m1, m2, m3, m4, &n);
+
+  printf("\n\nLe dernier printf() a affiché %d caractères.\n", n);
 
   return 0;
 }
