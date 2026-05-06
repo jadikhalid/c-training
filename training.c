@@ -1,101 +1,48 @@
 /*
- * Programme de tri de phrases
- * Amélioré : Gestion mémoire, sécurité et algorithme de tri standard.
+ * Tri d'une suite ce lignes de texte
  */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "utilitaires.h"
 
 #define MAXLINES 25
-#define BUFSIZE 80
+#define TOUJOURS 1
 
-// Prototypes
-int get_lines(char *lines[], int max_lines);
+int get_lines(char *lines[]);
+void sort(char *p[], int n, int sort_type);
 void print_strings(char *p[], int n);
-void free_lines(char *lines[], int n);
-int compare_strings(const void *a, const void *b);
+int alpha(char *p1, char *p2);
+int reverse(char *p1, char *p2);
 
-int main(void)
+char *lines[MAXLINES];
+
+int main()
 {
-  char *lines[MAXLINES];
-  int number_of_lines;
+  int number_of_lines, sort_type, c;
 
-  number_of_lines = get_lines(lines, MAXLINES);
+  number_of_lines = get_lines(lines);
 
   if (number_of_lines < 0)
   {
-    fprintf(stderr, "Erreur fatale : échec d'allocation mémoire.\n");
-    return EXIT_FAILURE;
+    puts("Erreur d'allocation mémoire");
+    return 1;
   }
-
-  if (number_of_lines > 0)
+  while (TOUJOURS)
   {
-    qsort(lines, (size_t)number_of_lines, sizeof(char *), compare_strings);
+    printf("Tapez 0 pour trier en ordre alphabétique inverse,\n");
+    printf("ou 1, pour trier en ordre alphabétique direct :");
+    if (scanf("%d", sort_type) != 1)
+    {
+      puts("Erreur de saisie");
 
-    printf("\n--- Phrases triées ---\n");
+      while ((c = getchar != '\n'))
+        ;
+      continue;
+    };
+    sort(lines, number_of_lines, sort_type);
     print_strings(lines, number_of_lines);
 
-    // 3. LIBÉRATION de la mémoire (Indispensable pour la perfection)
-    free_lines(lines, number_of_lines);
-  }
-  else
-  {
-    puts("Aucune phrase saisie.");
-  }
-
-  return EXIT_SUCCESS;
-}
-
-int get_lines(char *lines[], int max_lines)
-{
-  int n = 0;
-  char buffer[BUFSIZE];
-
-  puts("Tapez vos phrases (Entrée vide pour terminer) :");
-
-  while (n < max_lines && lire_clavier(buffer, sizeof(buffer)) != 0)
-  {
-    if (buffer[0] == '\0')
-      break;
-
-    lines[n] = malloc(strlen(buffer) + 1);
-    if (lines[n] == NULL)
-    {
-      free_lines(lines, n); // On nettoie ce qui a déjà été alloué avant de quitter
-      return -1;
-    }
-
-    strcpy(lines[n], buffer);
-    n++;
-  }
-  return n;
-}
-
-// Fonction de comparaison pour qsort
-// On caste les pointeurs génériques (void*) en pointeurs de pointeurs de char
-int compare_strings(const void *a, const void *b)
-{
-  const char *str_a = *(const char **)a;
-  const char *str_b = *(const char **)b;
-  return strcmp(str_a, str_b);
-}
-
-void print_strings(char *p[], int n)
-{
-  for (int i = 0; i < n; i++)
-  {
-    printf("[%d]: %s\n", i + 1, p[i]);
-  }
-}
-
-// La fonction qui manquait pour "nettoyer" la RAM
-void free_lines(char *lines[], int n)
-{
-  for (int i = 0; i < n; i++)
-  {
-    free(lines[i]);
-    lines[i] = NULL; // Bonne pratique : éviter les pointeurs fous
+    return 0;
   }
 }
