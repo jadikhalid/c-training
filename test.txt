@@ -1,5 +1,0 @@
-Bonjour,
-Je m'appelle Jadi Khalid.
-Je suis un développeur full stack spécialisé en React/Node.js.
-Je suis disponible.
-je vous remercie.
