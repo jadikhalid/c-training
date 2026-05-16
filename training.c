@@ -1,59 +1,42 @@
-
+/* Démonstration de la fonction fopen() */
 #include <stdio.h>
 #include <stdlib.h>
-
-#define NB_ELEMENTS 10
-
-int comparer_pointeurs(const void *a, const void *b)
-{
-  // a et b sont des pointeurs vers les cases de tab_ptr, donc des double**
-  double *ptr_a = *(double **)a;
-  double *ptr_b = *(double **)b;
-
-  if (*ptr_a < *ptr_b)
-    return -1;
-  if (*ptr_a > *ptr_b)
-    return 1;
-  return 0;
-}
+#include "utilitaires.h"
 
 int main()
 {
-  double *tab_ptr[NB_ELEMENTS];
-  double valeurs[NB_ELEMENTS];
+  FILE *fp;
+  char filename[40], mode[4];
 
-  printf("Veuillez saisir %d nombres réels séparés par entrée:\n", NB_ELEMENTS);
-
-  for (int i = 0; i < NB_ELEMENTS; i++)
+  while (1)
   {
-    printf("Valeur %d : ", i + 1);
+    /* Indiquer le nom de fichier et le mode */
+    printf("\nTapez un nom de fichier : ");
+    lire_clavier(filename, sizeof(filename));
+    printf("\nTapez un mode , 3 caracteres au plus : ");
+    lire_clavier(mode, sizeof(mode));
 
-    if (scanf("%lf", &valeurs[i]) != 1)
+    /* Essayer d'ouvrir le fichier */
+
+    if ((fp = fopen(filename, mode)) != NULL)
     {
-      fprintf(stderr, "Erreur de saisie. Fin de programme.\n");
-      return 1;
+      printf("\nOUverture réussie %s en mode %s.\n", filename, mode);
+      fclose(fp);
+      puts("Tapez x pour terminer, ou n'importe quoi d'autres pour continuer");
+      if (getc(stdin) == 'x')
+        break;
+      else
+        continue;
     }
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-      ;
-
-    tab_ptr[i] = &valeurs[i];
-  }
-
-  // TRI ****************************** :
-  qsort(tab_ptr, NB_ELEMENTS, sizeof(double *), comparer_pointeurs);
-
-  // AFFICHAGE *********************** :
-  printf("\n--- Tableau original 'valeurs' (inchangé) ---\n");
-  for (int i = 0; i < NB_ELEMENTS; i++)
-  {
-    printf("valeurs[%d] = %.2f\n", i, valeurs[i]);
-  }
-
-  printf("\n--- Tableau 'tab_ptr' (trié du plus petit au plus grand) ---\n");
-  for (int i = 0; i < NB_ELEMENTS; i++)
-  {
-    printf("Pointeur %d pointe vers %.2f\n", i, *tab_ptr[i]);
+    else
+    {
+      fprintf(stderr, "\nErreur a l'ouverture du fichier %s en mode %s.", filename, mode);
+      puts("Tapez x pour termine, ou n'importe quoi d'autres pour réessayer");
+      if (getc(stdin) == 'x')
+        break;
+      else
+        continue;
+    }
   }
 
   return 0;
