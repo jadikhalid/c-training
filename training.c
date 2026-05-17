@@ -1,43 +1,45 @@
-/* Démonstration de la fonction fopen() */
-#include <stdio.h>
+/* Demonstration de la fonction fprintf() */
 #include <stdlib.h>
+#include <stdio.h>
 #include "utilitaires.h"
+
+void clear_kb(void);
 
 int main()
 {
   FILE *fp;
-  char filename[40], mode[4];
+  float data[5];
+  int count;
+  char filename[20];
 
-  while (1)
+  puts("Tapez 5 valeurs numériques en flottant.");
+
+  for (count = 0; count < 5; count++)
+    scanf("%f", &data[count]);
+
+  clear_kb();
+
+  puts("Indiquez un nom pour le fichier.");
+  lire_clavier(filename, sizeof(filename));
+
+  if ((fp = fopen(filename, "w")) == NULL)
   {
-    /* Indiquer le nom de fichier et le mode */
-    printf("\nTapez un nom de fichier : ");
-    lire_clavier(filename, sizeof(filename));
-    printf("\nTapez un mode , 3 caracteres au plus : ");
-    lire_clavier(mode, sizeof(mode));
-
-    /* Essayer d'ouvrir le fichier */
-
-    if ((fp = fopen(filename, mode)) != NULL)
-    {
-      printf("\nOUverture réussie %s en mode %s.\n", filename, mode);
-      fclose(fp);
-      puts("Tapez x pour terminer, ou n'importe quoi d'autres pour continuer");
-      if (getc(stdin) == 'x')
-        break;
-      else
-        continue;
-    }
-    else
-    {
-      fprintf(stderr, "\nErreur a l'ouverture du fichier %s en mode %s.", filename, mode);
-      puts("Tapez x pour termine, ou n'importe quoi d'autres pour réessayer");
-      if (getc(stdin) == 'x')
-        break;
-      else
-        continue;
-    }
+    fprintf(stderr, "Erreur a l'ouverture du fichier %s.", filename);
+    return 1;
   }
 
+  for (count = 0; count < 5; count++)
+  {
+    fprintf(fp, "data[%d] = %f\n", count, data[count]);
+    fprintf(stdout, "data[%d] = %f\n", count, data[count]);
+  }
+  fclose(fp);
   return 0;
+}
+
+void clear_kb(void)
+{
+  int c;
+  while ((c = getchar()) != '\n' && c != EOF)
+    ;
 }
