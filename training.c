@@ -1,45 +1,22 @@
-/* Demonstration de la fonction fprintf() */
+/* Lecture de données formqtées sur un fichier avec fscanf() */
 #include <stdlib.h>
 #include <stdio.h>
-#include "utilitaires.h"
-
-void clear_kb(void);
 
 int main()
 {
+  float f1, f2, f3, f4, f5;
   FILE *fp;
-  float data[5];
-  int count;
-  char filename[20];
 
-  puts("Tapez 5 valeurs numériques en flottant.");
-
-  for (count = 0; count < 5; count++)
-    scanf("%f", &data[count]);
-
-  clear_kb();
-
-  puts("Indiquez un nom pour le fichier.");
-  lire_clavier(filename, sizeof(filename));
-
-  if ((fp = fopen(filename, "w")) == NULL)
+  if ((fp = fopen("result.txt", "r")) == NULL)
   {
-    fprintf(stderr, "Erreur a l'ouverture du fichier %s.", filename);
+    fprintf(stderr, "Erreur à l'ouverture du fichier.\n");
     return 1;
   }
+  fscanf(fp, "%f %f %f %f %f", &f1, &f2, &f3, &f4, &f5);
+  printf("Les valeurs sont : %f, %f, %f, %f et %f.\n ", f1, f2, f3, f4, f5);
 
-  for (count = 0; count < 5; count++)
-  {
-    fprintf(fp, "data[%d] = %f\n", count, data[count]);
-    fprintf(stdout, "data[%d] = %f\n", count, data[count]);
-  }
   fclose(fp);
-  return 0;
-}
+  fp = NULL;
 
-void clear_kb(void)
-{
-  int c;
-  while ((c = getchar()) != '\n' && c != EOF)
-    ;
+  return 0;
 }
