@@ -1,22 +1,39 @@
-/* Lecture de données formqtées sur un fichier avec fscanf() */
-#include <stdlib.h>
+/* Démonstration de ftell() et rewind() */
 #include <stdio.h>
+#include <stdlib.h>
+
+#define BUFLEN 6
+
+char msg[] = "abcdefghijklmnopqrstuvwxyz";
 
 int main()
 {
-  float f1, f2, f3, f4, f5;
   FILE *fp;
+  char buf[BUFLEN];
 
-  if ((fp = fopen("result.txt", "r")) == NULL)
+  if ((fp = fopen("result.txt", "w")) == NULL)
   {
-    fprintf(stderr, "Erreur à l'ouverture du fichier.\n");
+    fprintf(stderr, "Erreur à l'ouverture du fichier.");
     return 1;
   }
-  fscanf(fp, "%f %f %f %f %f", &f1, &f2, &f3, &f4, &f5);
-  printf("Les valeurs sont : %f, %f, %f, %f et %f.\n ", f1, f2, f3, f4, f5);
+
+  if (fputs(msg, fp) == EOF)
+  {
+    fprintf(stderr, "Erreur à l'écriture sur le fichier...");
+    return 1;
+  }
 
   fclose(fp);
   fp = NULL;
 
-  return 0;
+  /* Ouvrons maintenant le fichier en lecture */
+  if ((fp = fopen("result.txt", "r")) == NULL)
+  {
+    fprintf(stderr, "Erreur lors de la lecture du fichier");
+    return 1;
+  }
+
+  printf("\nImmédiattement aprés l'ouverture, la position du curseur dans le fichier %s  est : %ld", buf, ftell(fp));
+
+  /* Lire les 5 caractères suivants */
 }
