@@ -1,70 +1,49 @@
-/* Acces aleatoire avec fseek() */
-
+/* copie d un fichier */
 #include <stdio.h>
 #include <stdlib.h>
+#include "utilitaires.h"
 
-#define MAX 50
+int file_copy(char *oldname, char *newname);
 
 int main()
 {
-  FILE *fp;
-  int data, count, array[MAX];
-  long offset;
+  char source[80], destination[80];
 
-  /* Initialiser le tableau */
-  for (count = 0; count < MAX; count++)
-    array[count] = count * 2;
+  /* Demander les noms des fichiers source et destination */
 
-  /* Ouvrir un fichier binaire en ecriture */
-  if ((fp = fopen("random.dat", "wb")) == NULL)
+  printf("\nIndiquer le nom du fichier source : ");
+  lire_clavier(source, sizeof(source));
+
+  printf("\nIndiquee le nom du fichier destinataire : ");
+  lire_clavier(destination, sizeof(destination));
+
+  if (file_copy(source, destination) == 0)
+    puts("Copie reussie");
+  else
+    fprintf(stderr, "Erreur au cours de la copie");
+
+  return 1;
+}
+
+int file_copy(char *oldname, char *newname)
+{
+  FILE *fold, *fnew;
+  char buf[BUFSIZ];
+  int n;
+  /* Ouverture du fichier source en mode binaire */
+  if ((fold = fopen(oldname, "rb")) == NULL)
   {
-    fprintf(stderr, "\nErreur a l ouverture du fichier.");
+    fprintf(stderr, "Erreur lors de l ouverture du fichier %s\n", oldname);
     return 1;
   }
-
-  /* Ecrire le tableau dans le fichier puis le refermer */
-  if ((fwrite(array, sizeof(*array), MAX, fp)) != MAX)
+  /* Ouverture du fichier destination en ecriture
+  en mode binaire */
+  if ((fnew = fopen(newname, "wb")) == NULL)
   {
-    fprintf(stderr, "\nErreur a l ecriture dans le fichier.");
+    fclose(fold);
     return 1;
   }
-
-  fclose(fp);
-
-  /* Ouvrir le fichier en lecture */
-  if ((fp = fopen("random.dat", "rb")) == NULL)
-  {
-    fprintf(stderr, "\nErreur a l ouverture du fichier");
-    return 1;
-  }
-
-  /* Demander a l utilisateur quel element il veut lire
-  Lire l element et l afficher . Arreter lorsqu il
-  repond -1 */
-
-  while (1)
-  {
-    printf("\nIndiquez l element a lire, 0-%d, \
-      -1 pour arreter : ",
-           MAX - 1);
-    scanf("%ld", &offset);
-    if (offset < 0)
-      break;
-    else if (offset > MAX - 1)
-      continue;
-    /* Deplacer l indicateur de position sur l element specifie */
-    if (fseek(fp, (offset * sizeof(int)), SEEK_SET))
-    {
-      fprintf(stderr, "\nErreur avec fseek().");
-      return 1;
-    }
-    /* Lire un unique entirt */
-    fread(&data, sizeof(data), 1, fp);
-
-    printf("\nL element %ld a la veleur %d.", offset, data);
-  }
-
-  fclose(fp);
-
-  return 0;
+  /* Lire le fichier source morceaux par morceaux.
+  Si on n a pas atteint la fin du fichier , ercrire les
+  donnees sur le fichier destination */
 }
