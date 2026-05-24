@@ -1,49 +1,37 @@
-/* copie d un fichier */
+/* Demonstration de noms de fichier temporaires */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "utilitaires.h"
-
-int file_copy(char *oldname, char *newname);
+#include <string.h>
 
 int main()
 {
-  char source[80], destination[80];
+  char *buffer;
+  int fd;
+  FILE *tmpfd;
 
-  /* Demander les noms des fichiers source et destination */
+  /* Garnir le buffer avec un nom de fichier temporaire */
 
-  printf("\nIndiquer le nom du fichier source : ");
-  lire_clavier(source, sizeof(source));
+  buffer = strdup("fichier_XXXXXX");
 
-  printf("\nIndiquee le nom du fichier destinataire : ");
-  lire_clavier(destination, sizeof(destination));
+  /* Crée le fichier temporaire */
 
-  if (file_copy(source, destination) == 0)
-    puts("Copie reussie");
-  else
-    fprintf(stderr, "Erreur au cours de la copie");
-
-  return 1;
-}
-
-int file_copy(char *oldname, char *newname)
-{
-  FILE *fold, *fnew;
-  char buf[BUFSIZ];
-  int n;
-  /* Ouverture du fichier source en mode binaire */
-  if ((fold = fopen(oldname, "rb")) == NULL)
+  if ((fd = mkstemp(buffer)) == -1)
   {
-    fprintf(stderr, "Erreur lors de l ouverture du fichier %s\n", oldname);
+    fprintf(stderr, "Impossible de créer le fichier.\n");
     return 1;
   }
-  /* Ouverture du fichier destination en ecriture
-  en mode binaire */
-  if ((fnew = fopen(newname, "wb")) == NULL)
+  if ((tmpfd = fdopen(fd, "wb")) == NULL)
   {
-    fclose(fold);
+    fprintf(stderr, "Erreur lors de l ouverture du fichier");
     return 1;
   }
-  /* Lire le fichier source morceaux par morceaux.
-  Si on n a pas atteint la fin du fichier , ercrire les
-  donnees sur le fichier destination */
+
+  /* Utiliser le fichier temporaire */
+  printf("Nom de fichier temporaire : %s", buffer);
+
+  fclose(tmpfd);
+  free(buffer);
+
+  return 0;
 }
