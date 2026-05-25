@@ -1,1 +1,7 @@
-abcdefghijklmnopqrstuvwxyz
+Bonjour,
+
+Je m'appelle Jadi KHalid.
+
+je teste les fonction fread et fwrite
+
+Merci......
