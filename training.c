@@ -1,175 +1,129 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
-#define BUFFER_SIZE 80
+// Portablité windows / posix
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__) && !defined(__MSYS__)
+#include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
-typedef enum
+static inline int mkstemp(char *template_name)
 {
-  VALIDATION_OK,
-  ERR_SISS_VIDE,
-  ERR_ESPACE_INTERNE,
-  ERR_CHAR_INTERDIT
-} CodeValidation;
+  if (_mktemp_s(template_name, strlen(template_name) + 1) != 0)
+  {
+    return -1;
+  }
+  return _open(template_name, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD | _S_IWRITE);
+}
 
-CodeValidation valider_et_nettoyer_nom(char *chaine_brute, char **chaine_propre)
+#define close _close
+#else
+#include <unistd.h>
+#endif
+
+// Variables globales pour le mécanisme d'atexit()
+FILE *fp_temporaire = NULL;
+char nom_fichier_temp[256] = {0};
+
+// 1. Fonction de nettoyage enregitré par atexit()
+void nettoyer_fichier_temporaire(void)
 {
-  // 1- Supprimer le saut de ligne \n de fgets
-  size_t len = strlen(chaine_brute);
-  if (len > 0 && chaine_brute[len - 1] == '\n')
+  if (fp_temporaire != NULL)
   {
-    chaine_brute[len - 1] = '\0';
+    fclose(fp_temporaire);
+    printf("\n[Nettoyage] Fichier temporaire ferme automatiquement.\n");
   }
-  // 2- Nettoyage des espaces aux extremites (Trim)
-  char *debut = chaine_brute;
-  while (isspace((unsigned char)*debut))
-    debut++;
-  if (*debut == '\0')
+  if (nom_fichier_temp[0] != '\0')
   {
-    return ERR_SISS_VIDE;
+    remove(nom_fichier_temp);
+    printf("[Nettoyage] Fichier temporaire supprime physiquement du disque.\n");
   }
-  char *fin = debut + strlen(debut) - 1;
-  while (fin > debut && isspace((unsigned char)*fin))
-    fin--;
-  fin[1] = '\0';
+}
 
-  // On passe le pointeur nettoyé au programme principal
-  *chaine_propre = debut;
+// 2. La fonction demandée : Ouvre un fichier temporaire dans un mode spécifié
+FILE *ouvrir_fichier_temporaire(const char *mode)
+{
+  // On prépare le modèle de nom (les XXXXXX seront remplacés par l'alias mkstemp)
+  strcpy(nom_fichier_temp, "temp_jadi_XXXXXX");
 
-  // 3. Vérification des espaces internes (ex: "fi chier.txt")
-  char *p = debut;
-  while (*p)
+  // Utilisation de mkstemp (soit la version native POSIX, soit notre alias Windows)
+  int fd = mkstemp(nom_fichier_temp);
+
+  if (fd == -1)
   {
-    if (isspace((unsigned char)*p))
-    {
-      return ERR_ESPACE_INTERNE;
-    }
-    p++;
+    return NULL; // Échec de la génération ou de la création
   }
 
-  // 4. Vérification des caractères interdits OS (\ / : * ? " < > |)
-  const char *interdits = "\\/:*?\"<>|";
-  if (strpbrk(debut, interdits) != NULL)
+// Associe le descripteur de fichier brut à un flux FILE* avec le mode choisi
+#if defined(_WIN32) || defined(_WIN64)
+  fp_temporaire = _fdopen(fd, mode);
+#else
+  fp_temporaire = fdopen(fd, mode);
+#endif
+
+  if (fp_temporaire == NULL)
   {
-    return ERR_CHAR_INTERDIT;
+    close(fd); // Sécurité : ferme le descripteur brut si l'association échoue
+    return NULL;
   }
 
-  return VALIDATION_OK; // La saisie a passé tous les contrôles
+  // Enregistrement de la fonction de nettoyage
+  static int atexit_enregistre = 0;
+  if (!atexit_enregistre)
+  {
+    atexit(nettoyer_fichier_temporaire);
+    atexit_enregistre = 1;
+  }
+
+  return fp_temporaire;
 }
 
 int main()
 {
-  char raw_buffer[BUFFER_SIZE];
-  char *nom_fichier_nettoye = NULL;
-  FILE *fp = NULL;
-  int saisie_valide = 0;
+  // On ouvre le fichier dans le mode spécifié (ex: "w+" pour lecture/écriture)
+  FILE *fp = ouvrir_fichier_temporaire("w+");
 
-  while (!saisie_valide)
+  char tableau[] = "bonjour, je m'appelle Jadi Khalidé\nJe suis entrain d'écrire un progamme.";
+  char tableaufinal[80];
+  size_t taille_lue;
+
+  if (fp == NULL)
   {
-    printf("Entrez le nom du fichier : ");
-    fflush(stdout);
-
-    if (fgets(raw_buffer, sizeof(raw_buffer), stdin) == NULL)
-    {
-      fprintf(stderr, "\nFin de flux détectée. Quitter.\n");
-      return EXIT_FAILURE;
-    }
-
-    // Gestion du débordement technique de STDIN
-    size_t len = strlen(raw_buffer);
-    if (len == BUFFER_SIZE - 1 && raw_buffer[len - 1] != '\n')
-    {
-      fprintf(stderr, "Erreur : Saisie trop longue.\n\n");
-      int c;
-      while ((c = getchar()) != '\n' && c != EOF)
-        ;
-      continue;
-    }
-
-    // Appel du bloc de validation unique
-    CodeValidation resultat = valider_et_nettoyer_nom(raw_buffer, &nom_fichier_nettoye);
-
-    // Traitement du diagnostic
-    switch (resultat)
-    {
-    case ERR_SISS_VIDE:
-      fprintf(stderr, "Erreur : Le nom ne peut pas être vide.\n\n");
-      continue;
-    case ERR_ESPACE_INTERNE:
-      fprintf(stderr, "Erreur : Les espaces internes sont interdits (plusieurs mots détectés).\n\n");
-      continue;
-    case ERR_CHAR_INTERDIT:
-      fprintf(stderr, "Erreur : Caractères système interdits détectés (\\ / : * ? \" < > |).\n\n");
-      continue;
-    case VALIDATION_OK:
-      // Tout est validé par la fonction, on peut tenter l'ouverture
-      fp = fopen(nom_fichier_nettoye, "rb");
-      if (fp == NULL)
-      {
-        fprintf(stderr, "Erreur : Impossible d'ouvrir '%s' (Fichier introuvable/protégé).\n\n", nom_fichier_nettoye);
-      }
-      else
-      {
-        saisie_valide = 1; // Le fichier existe et est ouvert !
-      }
-      break;
-    }
+    fprintf(stderr, "Erreur lors de la creation du fichier temporaire\n");
+    return 1;
   }
 
-  printf("\nSuccès ! Le fichier '%s' est prêt pour le traitement.\n", nom_fichier_nettoye);
-  // --- DÉBUT DU BLOC DE LECTURE (À insérer après la validation) ---
-  printf("\n--- Analyse du fichier (Blocs de 128 octets) ---\n\n");
+  // Écriture du texte
+  fprintf(fp, "%s", tableau);
+  rewind(fp);
 
-  unsigned char bloc[128];
-  size_t bytes_read;
-  unsigned int compteur_bloc = 1;
-
-  // Étape 1 : Boucle de lecture par bloc
-  while ((bytes_read = fread(bloc, 1, sizeof(bloc), fp)) > 0)
+  // Lecture de la première ligne
+  if (fgets(tableaufinal, sizeof(tableaufinal), fp) != NULL)
   {
-    printf("Bloc %03u [%zu octets] : \n", compteur_bloc++, bytes_read);
-
-    // Étape 2 : Affichage de la partie Hexadécimale
-    for (size_t i = 0; i < bytes_read; i++)
-    {
-      printf("%02X ", bloc[i]);
-
-      // Optionnel : un espace supplémentaire tous les 16 octets pour aérer
-      if ((i + 1) % 16 == 0)
-        printf(" ");
-    }
-
-    // Étape 3 : Alignement (Padding) si le dernier bloc fait moins de 128 octets
-    // Chaque octet manquant en hexa occupait 3 caractères (2 lettres + 1 espace)
-    size_t octets_manquants = sizeof(bloc) - bytes_read;
-    for (size_t i = 0; i < octets_manquants; i++)
-    {
-      printf("   ");
-    }
-    // Compensation de l'aération optionnelle des blocs de 16
-    printf("   ");
-
-    // Séparateur entre l'Hexa et l'ASCII
-    printf(" | ");
-
-    // Étape 4 : Affichage de la partie ASCII
-    for (size_t i = 0; i < bytes_read; i++)
-    {
-      // On vérifie si le caractère est imprimable à l'écran
-      if (isprint(bloc[i]))
-      {
-        printf("%c", bloc[i]);
-      }
-      else
-      {
-        printf("."); // Remplacement des caractères invisibles
-      }
-    }
-
-    printf("\n\n"); // Fin du bloc actuel
+    printf("La premiere ligne est : %s", tableaufinal);
+    taille_lue = strlen(tableaufinal);
+    printf("Octets lus: %zu | Taille memoire tableau: %zu\n\n", taille_lue, sizeof(tableau));
   }
-  // --- FIN DU BLOC DE LECTURE ---
-  fclose(fp);
-  return EXIT_SUCCESS;
+  else
+  {
+    fprintf(stderr, "Erreur lors de la lecture de la premiere ligne\n");
+    return 1;
+  }
+
+  // Lecture de la deuxième ligne
+  if (fgets(tableaufinal + taille_lue, sizeof(tableaufinal) - taille_lue, fp) != NULL)
+  {
+    printf("La deuxieme ligne est : %s\n\n", tableaufinal + taille_lue);
+  }
+  else
+  {
+    fprintf(stderr, "Erreur lors de la lecture de la deuxieme ligne\n");
+    return 1;
+  }
+
+  printf("Le contenu du buffer tableaufinal est :\n%s\n", tableaufinal);
+
+  // atexit() interceptera ce return et exécutera 'nettoyer_fichier_temporaire'
+  return 0;
 }
