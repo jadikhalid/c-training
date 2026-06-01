@@ -1,68 +1,26 @@
-/* Compte le nombre d'occurences de chaque caractère dans un fichier. */
+/* Démonstration de strcpy() */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "utilitaires.h"
+#include <string.h>
 
-int file_exists(char *filename);
+char source[] = "Une chaine de caracteres.";
 
 int main()
 {
-  char ch, source[80];
-  int index;
-  long count[127];
+  char dest1[80];
+  char *dest2;
 
-  FILE *fp;
+  printf("\nsource : %s", source);
 
-  /* Lecture des noms de fichiers source et destination */
-  printf("\nEntrez le nom du fichier source : ");
-  lire_clavier(source, sizeof(source));
+  /* Copier cers dest1 */
+  strcpy(dest1, source);
+  printf("\ndest1 : %s", dest1);
 
-  /* Contôle de l'existence du fichier source */
-  if (!file_exists(source))
-  {
-    fprintf(stderr, "Le fichier source ne s'ouvre pas ! problème du fichier ou non exitencde du fichier.");
-    return 1;
-  }
-
-  /* Ouverture du fichier */
-  if ((fp = fopen(source, "r")) == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'ouverture du fichier source.");
-    return 1;
-  }
-
-  /* Initialisation des éléments du tableau */
-  for (index = 0; index < 127; index++)
-    count[index] = 0;
-
-  while ((ch = fgetc(fp)) != EOF)
-  {
-    if (ch > 31 && ch < 127)
-      count[(int)ch]++;
-  }
-
-  /* Affichage des résultats */
-  for (index = 32; index < 127; index++)
-  {
-    if (count[index] != 0)
-      printf("%c - %ld\n", index, count[index]);
-  }
-
-  fclose(fp);
+  /* Copier vers dest2 */
+  dest2 = malloc(strlen(source) + 1);
+  strcpy(dest2, source);
+  printf("\ndest2 : %s", dest2);
 
   return 0;
-}
-
-int file_exists(char *filename)
-{
-  /* Renvoie TRUE si le fichier texte existe, sinon FALSE */
-  FILE *fp;
-  if ((fp = fopen(filename, "r")) == NULL)
-    return 0;
-  else
-  {
-    fclose(fp);
-    return 1;
-  }
 }
