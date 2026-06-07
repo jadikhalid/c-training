@@ -1,71 +1,64 @@
-/* Utilisation des macros de test de caracteres pour
-   réaliser  une fonction lisant un entier au clavier  */
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
-#include <stdbool.h>
 
-int get_in(void);
-
-int main()
+/**
+ * Recherche la premiere occurrence de la chaine 'aiguille' dans 'meule_de_foin'
+ * sans distinction entre majuscules et minuscules.
+ *
+ * @param meule_de_foin La chaine dans laquelle on cherche.
+ * @param aiguille      La sous-chaine a rechercher.
+ * @return Un pointeur sur le debut de la sous-chaine trouvee, ou NULL.
+ */
+char *mon_strcasestr(const char *meule_de_foin, const char *aiguille)
 {
-  int x;
-  x = get_in();
-  printf("Vous avez tape : %d.\n", x);
+  // Regle standard de strstr : si l'aiguille est vide, on renvoie le debut de la meule
+  if (*aiguille == '\0')
+  {
+    return (char *)meule_de_foin;
+  }
 
-  return 0;
+  // Parcourir la meule de foin caractere par caractere
+  for (int i = 0; meule_de_foin[i] != '\0'; i++)
+  {
+
+    // Si le premier caractere correspond (en ignorant la casse)
+    if (tolower((unsigned char)meule_de_foin[i]) == tolower((unsigned char)aiguille[0]))
+    {
+
+      int j = 0;
+      // On verifie si toute la suite de l'aiguille correspond
+      while (aiguille[j] != '\0' && meule_de_foin[i + j] != '\0' &&
+             tolower((unsigned char)meule_de_foin[i + j]) == tolower((unsigned char)aiguille[j]))
+      {
+        j++;
+      }
+
+      // Si on a parcouru toute l'aiguille avec succes, on a trouve !
+      if (aiguille[j] == '\0')
+      {
+        return (char *)&meule_de_foin[i];
+      }
+    }
+  }
+
+  return NULL; // Aucune occurrence trouvee
 }
 
-int get_in(void)
+int main(void)
 {
-  int ch, i, sign = 1;
-  bool temoin = true;
-  while (temoin)
+  const char *texte = "Developper en Langage C est Genial";
+  const char *recherche = "lAnGaGe";
+
+  char *resultat = mon_strcasestr(texte, recherche);
+
+  if (resultat != NULL)
   {
-    /* Ignorer les espaces en tete */
-    puts("Tapez un chiffre");
-    while (isspace(ch = getchar()))
-      ;
-    /* Si le premier caractere n'est pas numérique
-    le recracher et renvoyer 0 */
-    if (ch != '-' && ch != '+' && !isdigit(ch) && ch != EOF)
-    {
-      puts("Entree invalide");
-      /* VIDER LE STDIN : on consomme tout jusqu'au '\n' */
-      int c;
-      while ((c = getchar()) != '\n' && c != EOF)
-        ;
-      continue;
-    }
-
-    /* Si le premier caractere est un signe -,
-    placer le signe du résultat */
-    if (ch == '-')
-      sign = -1;
-
-    /* Si le premier caractere est un signe + ou
-    un signe -, lire le aractere suivant */
-    if (ch == '+' || ch == '-')
-      ch = getchar();
-
-    /* Lire les caractere jusqu a tomber sur un
-    non chiffre. Effectuer la conversion en
-    multipliant chacun des chiffres lus par
-    la bonne puissance de 10 */
-    for (i = 0; isdigit(ch); ch = getchar())
-      i = 10 * i + (ch - '0');
-
-    /* Corriger éventuellement le signe */
-    i *= sign;
-
-    /* Si on n a pas rencontré le EOF, on recrache le caractere
-    non numerique. */
-    if (ch != EOF)
-      ungetc(ch, stdin);
-
-    temoin = false;
+    printf("Occurrence trouvee ! Reste de la chaine : \"%s\"\n", resultat);
   }
-  /* Renvoyer la valeur finale*/
-  return i;
+  else
+  {
+    printf("Sous-chaine non trouvee.\n");
+  }
+
+  return 0;
 }
