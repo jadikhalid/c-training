@@ -4,6 +4,6 @@
 #include <stdio.h>
 
 // Déclaration (prototype) de ta fonction
-int lire_clavier(char *str, int taille);
+int lire_clavier(char *str, size_t taille);
 
 #endif

@@ -1,6 +1,6 @@
 #include "utilitaires.h"
 
-int lire_clavier(char *str, int taille)
+int lire_clavier(char *str, size_t taille)
 {
   int i;
   if (fgets(str, taille, stdin) != NULL)
