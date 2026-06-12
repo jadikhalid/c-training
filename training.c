@@ -1,52 +1,133 @@
-/* Utilisation de qsort() et bsearch() pour des chaines de caracteres */
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <math.h>
 
-#include "utilitaires.h"
-
-#define MAX 20
-
-int comp(const void *s1, const void *s2)
+// Fonction utilitaire pour vider le tampon de saisie et éviter les boucles infinies
+void vider_tampon(void)
 {
-  return strcmp(*(char **)s1, *(char **)s2);
+  int c;
+  while ((c = getchar()) != '\n' && c != EOF)
+    ;
 }
 
-int main()
+// Fonction de saisie sécurisée pour les nombres réels (double)
+double saisir_double(const char *message)
 {
-  char *data[MAX], buf[80], *ptr, *key, **key1;
-  int count;
-
-  /* Entrée d'une suite de mots */
-  printf("Tapez %d mots séparés par un appui sur Entrée ", MAX);
-  for (count = 0; count < MAX; count++)
+  double valeur;
+  int statut;
+  while (1)
   {
-    printf("Mot %d : ", count + 1);
-    lire_clavier(buf, sizeof(buf));
-    data[count] = strdup(buf);
+    printf("%s", message);
+    statut = scanf("%lf", &valeur);
+    if (statut == 1)
+    {
+      vider_tampon();
+      return valeur;
+    }
+    printf("⚠️ Saisie invalide. Veuillez entrer un nombre correct.\n");
+    vider_tampon();
+  }
+}
+
+// Fonction de saisie sécurisée pour les entiers (durée)
+int saisir_entier(const char *message)
+{
+  int valeur;
+  int statut;
+  while (1)
+  {
+    printf("%s", message);
+    statut = scanf("%d", &valeur);
+    if (statut == 1 && valeur > 0)
+    {
+      vider_tampon();
+      return valeur;
+    }
+    printf("⚠️ Saisie invalide. La duree doit etre un entier superieur a 0.\n");
+    vider_tampon();
+  }
+}
+
+int main(void)
+{
+  printf("==================================================\n");
+  printf("       SIMULATEUR D'EMPRUNT OPTIMISÉ EN C        \n");
+  printf("==================================================\n\n");
+
+  // 1. Saisie des données avec contrôle de robustesse
+  double principal = saisir_double("Entrez le montant de l'emprunt (DH) : ");
+  if (principal <= 0)
+  {
+    printf("❌ Le montant de l'emprunt doit etre strictement positif.\n");
+    return EXIT_FAILURE;
   }
 
-  /* Trier es mots - les pointeurs en fait */
-  qsort(data, MAX, sizeof(data[0]), comp);
+  double taux_annuel = saisir_double("Entrez le taux d'interet annuel (%%, ex: 12 pour 12%%) : ");
+  int mois = saisir_entier("Entrez la duree du remboursement (en mois) : ");
 
-  /* Afficher les mots triés */
-  for (count = 0; count < MAX; count++)
-    printf("\n%d : %s", count + 1, data[count]);
+  // 2. Pré-calculs et gestion des cas limites (Taux 0 et Négatif)
+  double taux_mensuel = (taux_annuel / 100.0) / 12.0;
+  double mensualite = 0.0;
 
-  /* Demander une clé de recherche */
-  printf("\n\nTapez une clé de recherche : ");
-  lire_clavier(buf, sizeof(buf));
-
-  /* Effectuer la recherche par clé */
-  key = buf;
-  key1 = &key;
-  ptr = bsearch(key1, data, MAX, sizeof(data[0]), comp);
-
-  if (ptr != NULL)
-    printf("%s trouvé.\n", buf);
+  if (fabs(taux_mensuel) < 1e-9)
+  {
+    // Cas où le taux est strictement 0% (Évite la division par zéro)
+    mensualite = principal / mois;
+  }
   else
-    printf("%s non trouvé.\n", buf);
+  {
+    // Formule standard (Fonctionne aussi pour un taux négatif sans planter)
+    mensualite = (principal * taux_mensuel) / (1.0 - pow(1.0 + taux_mensuel, -mois));
+  }
 
-  exit(EXIT_SUCCESS);
+  // 3. Affichage du résumé du crédit
+  printf("\n==================================================\n");
+  printf("               RESUME DU CREDIT                   \n");
+  printf("==================================================\n");
+  printf("Capital emprunte : %15.2f DH\n", principal);
+  printf("Taux Annuel      : %15.2f %%\n", taux_annuel);
+  printf("Durée            : %15d mois\n", mois);
+  printf("Mensualité fixe  : %15.2f DH\n", mensualite);
+  printf("==================================================\n\n");
+
+  // 4. Génération et affichage du tableau d'amortissement
+  printf("+------+-------------------+-------------------+-------------------+-------------------+\n");
+  printf("| Mois |  Solde Initial    |  Interets Payes   | Capital Rembourse |  Solde Restant    |\n");
+  printf("+------+-------------------+-------------------+-------------------+-------------------+\n");
+
+  double solde_courant = principal;
+  double cumul_interets = 0.0;
+
+  for (int i = 1; i <= mois; i++)
+  {
+    double interet_mois = solde_courant * taux_mensuel;
+    double capital_rembourse_mois = mensualite - interet_mois;
+
+    // Ajustement de précision pour le tout dernier mois (évite les résidus de calcul à 0.01 près)
+    if (i == mois)
+    {
+      capital_rembourse_mois = solde_courant;
+      mensualite = capital_rembourse_mois + interet_mois;
+    }
+
+    double solde_restant = solde_courant - capital_rembourse_mois;
+    cumul_interets += interet_mois;
+
+    // Affichage parfaitement aligné grâce aux spécificateurs de format %14.2f
+    printf("| %4d | %14.2f DH | %14.2f DH | %14.2f DH | %14.2f DH |\n",
+           i, solde_courant, interet_mois, capital_rembourse_mois, fabs(solde_restant));
+
+    solde_courant = solde_restant;
+  }
+
+  printf("+------+-------------------+-------------------+-------------------+-------------------+\n");
+  printf("| TOTAL|                   | %14.2f DH | %14.2f DH |                   |\n",
+         cumul_interets, principal);
+  printf("+------+-------------------+-------------------+-------------------+-------------------+\n");
+  printf("\n Coût total du credit (Capital + Interets) : %.2f DH\n", principal + cumul_interets);
+
+  printf("\nAppuyez sur Entree pour quitter l'application...");
+  getchar();
+
+  return EXIT_SUCCESS;
 }
