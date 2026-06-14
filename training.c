@@ -1,33 +1,46 @@
-/* Emploi de memset, memcpy et memmove */
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-char message1[60] = "le chene, un jour, dit au roseau";
-char message2[60] = "abcdefghijklmnopqrstuvwxyz";
-char tempon[60];
+void afficher_binaire(unsigned int nombre)
+{
+  // Un unsigned int fait généralement 4 octets, soit 32 bits
+  int taille_bits = sizeof(nombre) * 8;
+  int bit_trouve = 0; // Pour ignorer les zéros inutiles au début (optionnel)
+
+  printf("Valeur binaire de %u : ", nombre);
+
+  // Si le nombre est strictement 0, on affiche juste 0
+  if (nombre == 0)
+  {
+    printf("0");
+  }
+  else
+  {
+    // On parcourt les bits du plus fort (gauche) au plus faible (droite)
+    for (int i = taille_bits - 1; i >= 0; i--)
+    {
+      // On décale le bit 'i' vers la position 0, et on applique un masque avec 1
+      int bit = (nombre >> i) & 1;
+
+      if (bit == 1)
+      {
+        bit_trouve = 1; // On a trouvé le premier bit significatif
+      }
+
+      // On commence à afficher seulement après le premier bit à 1
+      if (bit_trouve)
+      {
+        printf("%d", bit);
+      }
+    }
+  }
+  printf("\n");
+}
 
 int main()
 {
-  printf("\nmessage[1] avant memset : \t%s", message1);
-  memset(message1 + 5, '0', 10);
-  printf("\nmessage[1] apres memset : \t%s", message1);
+  unsigned int valeur = 258;
 
-  strcpy(tempon, message2);
-  printf("\n\nmessage original : %s", tempon);
-  memcpy(tempon + 4, tempon + 16, 10);
-  printf("\nApres memcpy, sans recouvrement : \t%s", tempon);
-  strcpy(tempon, message2);
-  memmove(tempon + 6, tempon + 4, 10);
-  printf("\nApres memcpy avec recouvrement : \t%s", tempon);
-
-  strcpy(tempon, message2);
-  printf("\n\nMessage original : %s", tempon);
-  memmove(tempon + 4, tempon + 16, 10);
-  printf("\nAprès memmove() sans recouvrement :\t%s", tempon);
-  strcpy(tempon, message2);
-  memmove(tempon + 6, tempon + 4, 10);
-  printf("\nAprès memmove() avec recouvrement :\t%s\n", tempon);
+  afficher_binaire(valeur);
 
   return 0;
 }
