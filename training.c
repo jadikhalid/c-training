@@ -1,21 +1,33 @@
-#define _POSIX_C_SOURCE 200809L
-#define _GNU_SOURCE
+#define _DEFAULT_SOURCE /* See feature_test_macros(7) */
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
+#include <grp.h>
 
-int main()
+int main(int argc, char *argv[])
 {
+  gid_t *table_gid = NULL;
+  int i;
+  // int taille;
 
-  uid_t uid_reel = getuid();
-  uid_t uid_eff = geteuid();
+  if (argc < 2)
+  {
+    fprintf(stderr, "Usage %s GID ...\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+  if ((table_gid = calloc((size_t)(argc - 1), sizeof(gid_t))) == NULL)
+  {
+    fprintf(stderr, "Erreur calloc, errno = %d\n", errno);
+    exit(EXIT_FAILURE);
+  }
+  for (i = 1; i < argc; i++)
+    if (sscanf(argv[i], "%u", &(table_gid[i - 1])) != 1)
+    {
+      fprintf(stderr, "GID invalide : %s\n", argv[i]);
+      exit(EXIT_FAILURE);
+    }
 
-  fprintf(stdout, "UID-R = %u, UID-E = %u\n", getuid(), geteuid());
-  fprintf(stdout, "setreuid(-1, %u) = %d\n", uid_reel, setreuid(-1, uid_reel));
-  fprintf(stdout, " UID-R = %u, UID-E = %u\n", getuid(), geteuid());
-  fprintf(stdout, " setreuid (-1, %d) = %d\n", uid_eff, setreuid(-1, uid_eff));
-  fprintf(stdout, " UID-R = %u, UID-E = %u\n", getuid(), geteuid());
-  fprintf(stdout, " setreuid (%d, -1) = %d\n", uid_eff, setreuid(uid_eff, -1));
-  fprintf(stdout, " UID-R = %u, UID-E = %u\n", getuid(), geteuid());
   return 0;
 }
