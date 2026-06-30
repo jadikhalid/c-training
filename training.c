@@ -1,53 +1,28 @@
-#define _DEFAULT_SOURCE
+#define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
 #include <unistd.h>
-#include <errno.h>
-#include <grp.h>
-#include <stdint.h> // Nécessaire pour intmax_t
+#include <sys/types.h>
 
 int main(int argc, char *argv[])
 {
   int i;
-  pid_t pid;
-  pid_t pgid;
-
-  // Si aucun argument, on affiche les infos du processus courant
+  pid_t pid, sid;
   if (argc == 1)
   {
-    // On caste en intmax_t pour une compatibilité parfaite avec le format %jd
-    fprintf(stdout, "Processus courant : %jd | Groupe : %jd\n",
-            (intmax_t)getpid(), (intmax_t)getpgid(0));
+    fprintf(stdout, "%d : %d\n", getpid(), getsid(0));
     return 0;
   }
-
-  // Boucle de traitement des arguments
   for (i = 1; i < argc; i++)
-  {
-    // Utilisation de long pour stocker temporairement la lecture
-    long temp_pid;
-    if (sscanf(argv[i], "%ld", &temp_pid) != 1)
-    {
+    if (sscanf(argv[i], "%d", &pid) != 1)
       fprintf(stderr, "PID invalide : %s\n", argv[i]);
-    }
     else
     {
-      pid = (pid_t)temp_pid;
-      pgid = getpgid(pid);
-
-      if (pgid == -1)
-      {
-        fprintf(stderr, "PID %jd inexistant ou erreur (errno: %d)\n",
-                (intmax_t)pid, errno);
-      }
+      sid = getsid(pid);
+      if (sid == -1)
+        fprintf(stderr, "%d inexistant\n", pid);
       else
-      {
-        fprintf(stdout, "PID : %jd | Groupe : %jd\n",
-                (intmax_t)pid, (intmax_t)pgid);
-      }
+        fprintf(stdout, "%d : %d\n", pid, sid);
     }
-  }
 
   return 0;
 }
