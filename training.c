@@ -1,56 +1,35 @@
-#define _XOPEN_SOURCE 500
-#define _POSIX_C_SOURCE 200112L
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-void recherche_variable(char *nom);
+#ifdef OPTIONS_LONGUES
+#include <getopt.h>
+#endif
 
-int main(void)
+/* Definition des valeurs par défaut*/
+#define ADRESSE_SERVEUR_DEFAUT "localhost"
+#define PORT_SERVEUR_DEFAUT "4000"
+#define CONNEXION_AUTO_DEFAUT 0
+#define DELAI_CONNEXION_DEFAUT 4
+
+void sous_option(char *ssopt, int *cnx_auto, int *delai);
+
+void suite_application(char *adresse_serveur,
+                       char *port_serveur,
+                       int connexion_auto,
+                       int delai_reconnexion,
+                       int argc, char *argv[]);
+
+void affiche_aide(char *nom_programme);
+
+int main(int argc, char *argv[])
 {
-  fprintf(stdout, "\n--- test de putenv() --- \n");
-  recherche_variable("ESSAI");
-  fprintf(stdout, "putenv(\"ESSAI=UN\");\n");
-  putenv("ESSAI=UN");
-  recherche_variable("ESSAI");
+  /* Copie des chaines d'environnement */
+  char *opt_adr = NULL;
+  char *opt_sry = NULL;
+  int opt_delai = 0;
+  char *retour_getenv;
 
-  fprintf(stdout, "putenv (\"ESSAI=\");\n");
-  putenv("ESSAI=");
-  recherche_variable("ESSAI");
-  fprintf(stdout, "putenv (\"ESSAI\"); équivaut à unsetenv( )\n");
-  putenv("ESSAI");
-  recherche_variable("ESSAI");
-
-  fprintf(stdout, "\n--- test de setenv( ) --- \n");
-  recherche_variable("ESSAI");
-  fprintf(stdout, "setenv (\"ESSAI\", \"DEUX\", 1);\n");
-  setenv("ESSAI", "DEUX", 1);
-  recherche_variable("ESSAI");
-
-  fprintf(stdout, "setenv (\"ESSAI\", \"TROIS\", 1);\n");
-  setenv("ESSAI", "TROIS", 1);
-  recherche_variable("ESSAI");
-
-  fprintf(stdout, "setenv (\"ESSAI\", \"QUATRE\", 0);"
-                  " écrasement de valeur non autorisé\n");
-  setenv("ESSAI", "QUATRE", 0);
-  recherche_variable("ESSAI");
-
-  fprintf(stdout, "\n-- test de unsetenv( ) -- \n");
-  recherche_variable("ESSAI");
-  fprintf(stdout, "unsetenv (\"ESSAI\");\n");
-  unsetenv("ESSAI");
-  recherche_variable("ESSAI");
-
-  return EXIT_SUCCESS;
-}
-
-void recherche_variable(char *nom)
-{
-  char *valeur;
-  fprintf(stdout, " variable %s ", nom);
-  valeur = getenv(nom);
-  if (valeur == NULL)
-    fprintf(stderr, "Inexistante.\n");
-  else
-    fprintf(stdout, " = %s\n", valeur);
+  /* Variables contenant les valeurs effectives de nos paramètres */
+  static char *adresse_serveur = ADRESSE_SERVEUR_DEFAUT;
 }
