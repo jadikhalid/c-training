@@ -32,4 +32,24 @@ int main(int argc, char *argv[])
 
   /* Variables contenant les valeurs effectives de nos paramètres */
   static char *adresse_serveur = ADRESSE_SERVEUR_DEFAUT;
+  static char *port_serveur = PORT_SERVEUR_DEFAUT;
+  int connexion_auto = CONNEXION_AUTO_DEFAUT;
+  int option;
+
+  /* Lecture des varibales d'environnement */
+  retour_getenv = getenv("OPT_ADR");
+  if ((retour_getenv != NULL) && (strlen(retour_getenv) != 0))
+  {
+    opt_adr = (char *)malloc(strlen(retour_getenv) + 1);
+    if (opt_adr != NULL)
+    {
+      strcpy(opt_adr, retour_getenv);
+      adresse_serveur = opt_adr;
+    }
+    else
+    {
+      perror("malloc");
+      exit(1);
+    }
+  }
 }
