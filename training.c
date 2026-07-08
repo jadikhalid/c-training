@@ -1,32 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <errno.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 int main(void)
 {
-  FILE *sortie;
-  char ligne[128];
-  char etat[128];
-
-  if ((sortie = popen("/sbin/ifconfig eth0", "r")) == NULL)
+  pid_t pid;
+  int status;
+  switch (pid = fork())
   {
-    fprintf(stderr, " Erreur popen %d \n", errno);
-    return 1;
+  case -1:
+    fprintf(stderr, "Erreur dans fork()\n");
+    exit(1);
+  case 0:
+    fprintf(stdout, "Fils 1 : PID = %u\n", getpid());
+    while (1)
+      pause();
+  default:
+    break;
   }
-
-  while (fgets(ligne, 127, sortie) != NULL)
+  switch (fork())
   {
-    if (sscanf(ligne, "%s", etat) == 1)
-      if (strcmp(etat, "UP") == 0)
-      {
-        fprintf(stderr, "interface eth0 en marche \n");
-        pclose(sortie);
-        return 0;
-      }
+  case -1:
+    fprintf(stderr, "Erreur dans fork()\n");
+    exit(1);
   }
-  fprintf(stdout, "interface eth0 inactive \n");
-  pclose(sortie);
-  return 0;
 }
