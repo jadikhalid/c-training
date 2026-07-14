@@ -1,22 +1,32 @@
+#define _XOPEN_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <unistd.h>
-#include <string.h>
+#include <errno.h>
+#include <signal.h>
 
 void gestionnaire(int numero_signal)
 {
-  fprintf(stdout, "\n %u a recu le signal %d (%s)\n", getpid(), numero_signal, strsignal(numero_signal));
+  fprintf(stdout, "\n gestionnare de signal %d\n", numero_signal);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-  for (int i = 1; i < _NSIG; i++)
-    if (signal(i, gestionnaire) == SIG_ERR)
-      fprintf(stderr, "Signal %d non capturé \n", i);
+  int i;
+  if ((argc != 2) || (sscanf(argv[1], "%d", &i) != 1))
+  {
+    fprintf(stderr, "Syntaxe : %s {0|1}\n", argv[0]);
+    exit(1);
+  }
+  signal(SIGTSTP, gestionnaire);
+  siginterrupt(SIGTSTP, i);
+
   while (1)
   {
-    pause();
+    fprintf(stdout, "appel read()\n");
+    if (read(0, &i, sizeof(int)) < 0)
+      if (errno == EINTR)
+        fprintf(stdout, "EINTR \n");
   }
 
   return 0;
