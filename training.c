@@ -1,28 +1,48 @@
-#define _XOPEN_SOURCE 200809L
+#define _POSIX_C_SOURCE 200809L
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <signal.h>
 
-void gestionnaire(int numero_signal)
+void gestionnaire(int numero)
 {
-  fprintf(stdout, "\n gestionnare de signal %d\n", numero_signal);
+  switch (numero)
+  {
+  case SIGQUIT:
+    fprintf(stdout, "\n SIGQUIT reçu \n");
+    fflush(stdout);
+    break;
+  case SIGINT:
+    fprintf(stdout, "\n SIGINT reçu \n");
+    fflush(stdout);
+    break;
+  }
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
-  int i;
-  if ((argc != 2) || (sscanf(argv[1], "%d", &i) != 1))
+  struct sigaction action;
+
+  action.sa_handler = gestionnaire;
+  sigemptyset(&(action.sa_mask));
+  action.sa_flags = 0;
+  if (sigaction(SIGQUIT, &action, NULL) != 0)
   {
-    fprintf(stderr, "Syntaxe : %s {0|1}\n", argv[0]);
+    fprintf(stderr, "Erreur %d \n", errno);
     exit(1);
   }
-  signal(SIGTSTP, gestionnaire);
-  siginterrupt(SIGTSTP, i);
-
+  action.sa_handler = gestionnaire;
+  sigemptyset(&(action.sa_mask));
+  action.sa_flags = (int)(SA_RESTART | SA_RESETHAND);
+  if (sigaction(SIGINT, &action, NULL) != 0)
+  {
+    fprintf(stderr, "Erreur %d \n", errno);
+    exit(1);
+  }
   while (1)
   {
+    int i;
     fprintf(stdout, "appel read()\n");
     if (read(0, &i, sizeof(int)) < 0)
       if (errno == EINTR)
