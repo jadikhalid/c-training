@@ -1,53 +1,71 @@
 #define _POSIX_C_SOURCE 200809L
-#include <signal.h>
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <errno.h>
 
-void gestionnaire(int numero)
+void gestionnaire(int numero_signal)
 {
-  switch (numero)
+  stack_t pile;
+
+  fprintf(stdout, "\n signal %d reçu \n", numero_signal);
+  if (sigaltstack(NULL, &pile) != 0)
   {
-  case SIGQUIT:
-    fprintf(stdout, "\n SIGQUIT reçu \n");
-    fflush(stdout);
-    break;
-  case SIGINT:
-    fprintf(stdout, "\n SIGINT reçu \n");
-    fflush(stdout);
-    break;
+    fprintf(stderr, "Erreur sigaltstack %d \n", errno);
+    exit(1);
   }
+  if (pile.ss_flags & SS_DISABLE)
+    fprintf(stdout, "La pile spéciale est inactive \n");
+  else
+    fprintf(stdout, "La pile spéciale est active \n");
+  if (pile.ss_flags & SS_ONSTACK)
+    fprintf(stdout, "Pile spéciale en cours d'utilisation \n");
+  else
+    fprintf(stdout, "Pile spéciale pas utilisée actuellement \n");
 }
 
 int main(void)
 {
+  stack_t pile;
   struct sigaction action;
 
+  if ((pile.ss_sp = malloc((size_t)SIGSTKSZ)) == NULL)
+  {
+    fprintf(stderr, "Pas assez de memoire \n");
+    exit(1);
+  }
+  pile.ss_size = (size_t)SIGSTKSZ;
+  pile.ss_flags = 0;
+
+  if (sigaltstack(&pile, NULL) != 0)
+  {
+    fprintf(stderr, "Erreur sigaltatack() %d \n", errno);
+    exit(1);
+  }
   action.sa_handler = gestionnaire;
   sigemptyset(&(action.sa_mask));
-  action.sa_flags = 0;
+  action.sa_flags = SA_RESTART | SA_ONSTACK;
+
   if (sigaction(SIGQUIT, &action, NULL) != 0)
   {
-    fprintf(stderr, "Erreur %d \n", errno);
+    fprintf(stderr, "Erreur sigaction() %d \n", errno);
     exit(1);
-  }
-  action.sa_handler = gestionnaire;
-  sigemptyset(&(action.sa_mask));
-  action.sa_flags = (int)(SA_RESTART | SA_RESETHAND);
-  if (sigaction(SIGINT, &action, NULL) != 0)
-  {
-    fprintf(stderr, "Erreur %d \n", errno);
-    exit(1);
-  }
-  while (1)
-  {
-    int i;
-    fprintf(stdout, "appel read()\n");
-    if (read(0, &i, sizeof(int)) < 0)
-      if (errno == EINTR)
-        fprintf(stdout, "EINTR \n");
   }
 
+  action.sa_handler = gestionnaire;
+  sigemptyset(&(action.sa_mask));
+  action.sa_flags = SA_RESTART;
+
+  if (sigaction(SIGTERM, &action, NULL) != 0)
+  {
+    fprintf(stderr, "Erreur sigaction() %d \n", errno);
+    exit(1);
+  }
+  fprintf(stdout, "PID = %u \n", getpid());
+  fflush(stdout);
+  while (1)
+    pause();
   return 0;
 }
