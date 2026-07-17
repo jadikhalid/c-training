@@ -1,71 +1,44 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <signal.h>
-#include <errno.h>
+#include <setjmp.h>
+#include <unistd.h>
 
-void gestionnaire(int numero_signal)
+sigjmp_buf contexte_sigalrm;
+
+void gestionnaire_sigsigalrm()
 {
-  stack_t pile;
-
-  fprintf(stdout, "\n signal %d reçu \n", numero_signal);
-  if (sigaltstack(NULL, &pile) != 0)
-  {
-    fprintf(stderr, "Erreur sigaltstack %d \n", errno);
-    exit(1);
-  }
-  if (pile.ss_flags & SS_DISABLE)
-    fprintf(stdout, "La pile spéciale est inactive \n");
-  else
-    fprintf(stdout, "La pile spéciale est active \n");
-  if (pile.ss_flags & SS_ONSTACK)
-    fprintf(stdout, "Pile spéciale en cours d'utilisation \n");
-  else
-    fprintf(stdout, "Pile spéciale pas utilisée actuellement \n");
+  siglongjmp(contexte_sigalrm, 1);
 }
 
 int main(void)
 {
-  stack_t pile;
-  struct sigaction action;
+  char ligne[80];
+  int i;
 
-  if ((pile.ss_sp = malloc((size_t)SIGSTKSZ)) == NULL)
+  signal(SIGALRM, gestionnaire_sigsigalrm);
+  fprintf(stdout, "Entrez un nombre entier avant 5s : ");
+  if (sigsetjmp(contexte_sigalrm, 1) == 0)
   {
-    fprintf(stderr, "Pas assez de memoire \n");
+    alarm(5);
+
+    while (1)
+    {
+      if (fgets(ligne, 79, stdin) != NULL)
+        if (sscanf(ligne, "%d", &i) == 1)
+          break;
+    }
+
+    alarm(0);
+    fprintf(stdout, "ok !\n");
+  }
+  else
+  {
+    fprintf(stdout, "\n Trop tard !\n");
     exit(1);
   }
-  pile.ss_size = (size_t)SIGSTKSZ;
-  pile.ss_flags = 0;
-
-  if (sigaltstack(&pile, NULL) != 0)
-  {
-    fprintf(stderr, "Erreur sigaltatack() %d \n", errno);
-    exit(1);
-  }
-  action.sa_handler = gestionnaire;
-  sigemptyset(&(action.sa_mask));
-  action.sa_flags = SA_RESTART | SA_ONSTACK;
-
-  if (sigaction(SIGQUIT, &action, NULL) != 0)
-  {
-    fprintf(stderr, "Erreur sigaction() %d \n", errno);
-    exit(1);
-  }
-
-  action.sa_handler = gestionnaire;
-  sigemptyset(&(action.sa_mask));
-  action.sa_flags = SA_RESTART;
-
-  if (sigaction(SIGTERM, &action, NULL) != 0)
-  {
-    fprintf(stderr, "Erreur sigaction() %d \n", errno);
-    exit(1);
-  }
-  fprintf(stdout, "PID = %u \n", getpid());
-  fflush(stdout);
-  while (1)
-    pause();
   return 0;
 }
