@@ -1,44 +1,48 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
-#include <setjmp.h>
 #include <unistd.h>
 
-sigjmp_buf contexte_sigalrm;
-
-void gestionnaire_sigsigalrm()
+void syntaxe(const char *nom)
 {
-  siglongjmp(contexte_sigalrm, 1);
+  fprintf(stderr, "syntaxe %s signal pid ...\n", nom);
+  exit(1);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-  char ligne[80];
   int i;
+  int numero;
+  pid_t pid;
+  union sigval valeur;
 
-  signal(SIGALRM, gestionnaire_sigsigalrm);
-  fprintf(stdout, "Entrez un nombre entier avant 5s : ");
-  if (sigsetjmp(contexte_sigalrm, 1) == 0)
-  {
-    alarm(5);
+  if (argc == 1)
+    syntaxe(argv[0]);
 
-    while (1)
-    {
-      if (fgets(ligne, 79, stdin) != NULL)
-        if (sscanf(ligne, "%d", &i) == 1)
-          break;
-    }
-
-    alarm(0);
-    fprintf(stdout, "ok !\n");
-  }
+  i = 1;
+  if (argc == 2)
+    numero = SIGTERM;
   else
   {
-    fprintf(stdout, "\n Trop tard !\n");
-    exit(1);
+    if (sscanf(argv[i], "%d", &numero) != 1)
+      syntaxe(argv[0]);
+    i++;
+  }
+  if ((numero < 0) || (numero > NSIG - 1))
+    syntaxe(argv[0]);
+  valeur.sival_int = 0;
+  for (; i < argc; i++)
+  {
+    if (sscanf(argv[i], "%d", &pid) != 1)
+      syntaxe(argv[0]);
+    if (sigqueue(pid, numero, valeur) < 0)
+    {
+      fprintf(stderr, "%u", pid);
+      perror("");
+    }
   }
   return 0;
 }
