@@ -3,46 +3,35 @@
 
 #include <signal.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-void syntaxe(const char *nom)
+int main(void)
 {
-    fprintf(stderr, "syntaxe %s signal pid ...\n", nom);
-    exit(1);
-}
-
-int main(int argc, char *argv[])
-{
-    int i;
+    sigset_t ensemble;
     int numero;
-    pid_t pid;
-    union sigval valeur;
+    struct timespec delai;
 
-    if (argc == 1)
-        syntaxe(argv[0]);
+    fprintf(stdout, "PID=%u\n", getpid());
 
-    i = 1;
-    if (argc == 2)
-        numero = SIGTERM;
-    else
+    /* Blocage de tous les signaux */
+    sigfillset(&ensemble);
+    sigprocmask(SIG_BLOCK, &ensemble, NULL);
+
+    /* Attente de tous les signaux pendant 10 secondes */
+    delai.tv_sec = 10;
+    delai.tv_nsec = 0;
+
+    sigfillset(&ensemble);
+    while (1)
     {
-        if (sscanf(argv[i], "%d", &numero) != 1)
-            syntaxe(argv[0]);
-        i++;
-    }
-    if ((numero < 0) || (numero > NSIG - 1))
-        syntaxe(argv[0]);
-    valeur.sival_int = 0;
-    for (; i < argc; i++)
-    {
-        if (sscanf(argv[i], "%d", &pid) != 1)
-            syntaxe(argv[0]);
-        if (sigqueue(pid, numero, valeur) < 0)
+        if ((numero = sigtimedwait(&ensemble, NULL, &delai)) < 0)
         {
-            fprintf(stderr, "%u", pid);
-            perror("");
+            perror("Erreur a l'appel de sigtimedwait");
+            break;
         }
+        fprintf(stdout, "sigtimedwait %d reçu \n", numero);
     }
+
     return 0;
 }
