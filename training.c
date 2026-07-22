@@ -1,45 +1,36 @@
-#define _POSIX_C_SOURCE 200809L
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <unistd.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <errno.h>
+#include <sys/resource.h>
 
-unsigned long int mode_utilisateur;
-unsigned long int mode_utilisateur_et_noyau;
-
-void gestionnaire_signaux(int numero);
-void fin_du_suivi(void);
-void action_a_mesurer(void);
-
-int main(void)
+int main(int argc, char *argv[])
 {
-  struct sigaction action;
-  struct itimerval timer;
+  int lesquelles;
+  struct rusage statistiques;
 
-  /* Preparation du timer */
-  timer.it_value.tv_sec = 0;
-  timer.it_value.tv_usec = 10000;
-  timer.it_interval.tv_sec = 0;
-  timer.it_interval.tv_usec = 10000;
-
-  /* Installation du gestionnaire de signaux */
-  action.sa_handler = gestionnaire_signaux;
-  sigemptyset(&(action.sa_mask));
-  action.sa_flags = SA_RESTART;
-  if ((sigaction(SIGVTALRM, &action, NULL) != 0) || (sigaction(SIGPROF, &action, NULL) != 0))
+  if (argc == 1)
   {
-    fprintf(stderr, "Erreur á l'appel de la fonction sigaction()");
-    return (-1);
+    lesquelles = RUSAGE_SELF;
   }
-
-  /* Déclenchement des nouveaux timers */
-  if ((setitimer(ITIMER_VIRTUAL, &timer, NULL)) != 0 || (setitimer(ITIMER_PROF, &timer, NULL)) != 0)
+  else
   {
-    fprintf(stderr, "Erreur á l'appel de setitmer()");
-    return -1;
+    system(argv[1]);
+    lesquelles = RUSAGE_CHILDREN;
   }
+  if (getrusage(lesquelles, &statistiques) != 0)
+  {
+    fprintf(stderr, "Impossible d'obtenir les statistiques \n");
+    exit(1);
+  }
+  fprintf(stdout, "Temps en mode utilisateur %ld s. et %ld ms \n", statistiques.ru_utime.tv_sec, statistiques.ru_utime.tv_usec / 1000);
+  fprintf(stdout, "Temps en mode noyau %ld s, et %ld ms \n", statistiques.ru_utime.tv_sec, statistiques.ru_utime.tv_usec / 1000);
+
+  fprintf(stdout, "\n");
+
+  fprintf(stdout, "Nombre de fautes de pages mineures : %ld \n", statistiques.ru_minflt);
+  fprintf(stdout, "Nombre de fautes de pages majeures : %ld \n", statistiques.ru_majflt);
+
+  fprintf(stdout, "Nombre de swaps du processus : %ld \n", statistiques.ru_nswap);
+
+  return 0;
 }
