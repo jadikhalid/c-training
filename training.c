@@ -1,36 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
 #include <sys/resource.h>
 
-int main(int argc, char *argv[])
+int main(void)
 {
-  int lesquelles;
-  struct rusage statistiques;
-
-  if (argc == 1)
+#ifdef NDEBUG
+  struct rlimit limite;
+  if (getrlimit(RLIMIT_CORE, &limite) != 0)
   {
-    lesquelles = RUSAGE_SELF;
+    fprintf(stderr, "Erreur a la recuperation des information de rlimit de latructtask du processus en cours");
+    return -1;
   }
-  else
+  limite.rlim_cur = 0;
+  if (setrlimit(RLIMIT_CORE, &limite) != 0)
   {
-    system(argv[1]);
-    lesquelles = RUSAGE_CHILDREN;
+    fprintf(stderr, "Impossible d'écrire RLIMIT_CORE\n");
+    return 1;
   }
-  if (getrusage(lesquelles, &statistiques) != 0)
-  {
-    fprintf(stderr, "Impossible d'obtenir les statistiques \n");
-    exit(1);
-  }
-  fprintf(stdout, "Temps en mode utilisateur %ld s. et %ld ms \n", statistiques.ru_utime.tv_sec, statistiques.ru_utime.tv_usec / 1000);
-  fprintf(stdout, "Temps en mode noyau %ld s, et %ld ms \n", statistiques.ru_utime.tv_sec, statistiques.ru_utime.tv_usec / 1000);
+  fprintf(stdout, "Code définitif, \"core\" évité \n");
+#else
+  fprintf(stdout, "Code de développement, \" core\" créé si besoin \n");
+#endif
 
-  fprintf(stdout, "\n");
-
-  fprintf(stdout, "Nombre de fautes de pages mineures : %ld \n", statistiques.ru_minflt);
-  fprintf(stdout, "Nombre de fautes de pages majeures : %ld \n", statistiques.ru_majflt);
-
-  fprintf(stdout, "Nombre de swaps du processus : %ld \n", statistiques.ru_nswap);
+  raise(SIGSEGV);
 
   return 0;
 }
