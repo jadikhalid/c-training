@@ -1,31 +1,60 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/resource.h>
+#include <string.h>
+
+char *alloc_printf(const char *format, ...);
 
 int main(void)
 {
-#ifdef NDEBUG
-  struct rlimit limite;
-  if (getrlimit(RLIMIT_CORE, &limite) != 0)
+  char *buffer;
+  char *seizecars = "0123456789ABCDEF";
+  buffer = alloc_printf(" %s %s", seizecars, seizecars);
+  if (buffer != NULL)
   {
-    fprintf(stderr, "Erreur a la recuperation des information de rlimit de latructtask du processus en cours");
-    return -1;
+    fprintf(stdout, "Chaine de %d caracteres \n %s \n", (int)strlen(buffer), buffer);
+    free(buffer);
   }
-  limite.rlim_cur = 0;
-  if (setrlimit(RLIMIT_CORE, &limite) != 0)
+  buffer = alloc_printf(" %s %s %s %s", seizecars, seizecars, seizecars, seizecars);
+  if (buffer != NULL)
   {
-    fprintf(stderr, "Impossible d'écrire RLIMIT_CORE\n");
-    return 1;
+    fprintf(stdout, "Chine de %d caracteres \n %s \n", (int)strlen(buffer), buffer);
+    free(buffer);
   }
-  fprintf(stdout, "Code définitif, \"core\" évité \n");
-#else
-  fprintf(stdout, "Code de développement, \" core\" créé si besoin \n");
-#endif
-
-  raise(SIGSEGV);
 
   return 0;
+}
+
+char *alloc_printf(const char *format, ...)
+{
+  va_list arguments;
+  char *retour = NULL;
+  int taille = 64;
+  int nb_ecrits;
+
+  va_start(arguments, format);
+  while (1)
+  {
+    retour = realloc(retour, (size_t)taille);
+    if (retour == NULL)
+    {
+      va_end(arguments);
+      return NULL;
+    }
+
+    // On crée une copie de la va_list pour ce tour de boucle
+    va_list args_copie;
+    va_copy(args_copie, arguments);
+
+    nb_ecrits = vsnprintf(retour, (size_t)taille, format, args_copie);
+
+    va_end(args_copie); // On nettoie la copie
+
+    if ((nb_ecrits >= 0) && (nb_ecrits < taille))
+      break;
+
+    taille = taille + 64;
+  }
+  va_end(arguments);
+  return (retour);
 }
