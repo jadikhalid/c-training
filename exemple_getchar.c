@@ -17,9 +17,13 @@ int main(void)
     rang = emplacement % 16;
 
     if (rang == 0)
+    {
       fprintf(stdout, "%08x  ", emplacement);
+      fflush(stdout);
+    }
 
     fprintf(stdout, "%02x", lu);
+    fflush(stdout);
 
     if (rang == 7)
       fprintf(stdout, "-");
