@@ -1,58 +1,24 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
-#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 int main(void)
 {
-  int lu;
-  char caracteres[17];
-  int emplacement = 0;
-  int rang = 0;
-
-  // Initialisation propre du tableau
-  for (int i = 0; i < 17; i++)
-    caracteres[i] = '\0';
-
-  while ((lu = getchar()) != EOF)
+  char *chaine;
+  size_t taille;
+  ssize_t retour;
+  while (1)
   {
-    rang = emplacement % 16;
-
-    if (rang == 0)
-      fprintf(stdout, "%08x  ", emplacement);
-
-    fprintf(stdout, "%02x", lu);
-
-    if (rang == 7)
-      fprintf(stdout, "-");
-    else
-      fprintf(stdout, " ");
-
-    if (isprint(lu))
-      caracteres[rang] = (char)lu;
-    else
-      caracteres[rang] = '.';
-
-    if (rang == 15)
-    {
-      fprintf(stdout, " |%s|\n", caracteres);
-      fflush(stdout); // On force l'écriture immédiate
-    }
-
-    emplacement++;
-  }
-
-  // Si le fichier se termine et que la dernière ligne est incomplète
-  if (rang != 15 && emplacement > 0)
-  {
-    int i = rang + 1;
-    while (i < 16)
-    {
-      fprintf(stdout, "   ");
-      caracteres[i] = ' ';
-      i++;
-    }
-    caracteres[16] = '\0';
-    fprintf(stdout, " |%s|\n", caracteres);
-    fflush(stdout);
+    taille = 0;
+    chaine = NULL;
+    retour = getline(&chaine, &taille, stdin);
+    if (retour == -1)
+      break;
+    fprintf(stdout, "%zd caractéres lus\n", retour);
+    fprintf(stdout, "%zd caractéres alloués \n", taille);
+    free(chaine);
   }
 
   return 0;
