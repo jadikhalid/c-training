@@ -1,25 +1,12 @@
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
-int main(void)
+void affiche_status(pid_t pid)
 {
-  char *chaine;
-  size_t taille;
-  ssize_t retour;
-  while (1)
-  {
-    taille = 0;
-    chaine = NULL;
-    retour = getline(&chaine, &taille, stdin);
-    if (retour == -1)
-      break;
-    fprintf(stdout, "%zd caractéres lus\n", retour);
-    fprintf(stdout, "%zd caractéres alloués \n", taille);
-    free(chaine);
-  }
-
-  return 0;
+  FIle *fp;
+  char chaine[80];
+  sprintf(chaine, "/proc/%u/status", pid);
 }
