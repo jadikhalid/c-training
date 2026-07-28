@@ -1,12 +1,63 @@
+#define _GNU_SOURCE
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-void affiche_status(pid_t pid)
+#define NB_FILS 5
+
+volatile long compteur = 0;
+
+static int gentillesse;
+
+void gestionnaire(void)
 {
-  FIle *fp;
-  char chaine[80];
-  sprintf(chaine, "/proc/%u/status", pid);
+  if (compteur != 0)
+  {
+    fprintf(stdout, "Fils %u (nice %u) Compteur = %9ld\n", getpid(), gentillesse, compteur);
+    exit(0);
+  }
+}
+
+int main(void)
+{
+  pid_t pid;
+  int fils;
+
+  /* Création d'un nouveau groupe de processus */
+  setpgid(0, 0);
+
+  signal(SIGUSR1, gestionnaire);
+  for (fils = 0; fils < NB_FILS; fils++)
+  {
+    if ((pid = fork()) < 0)
+    {
+      perror("Erreur á l'appel de fork()");
+      exit(1);
+    }
+    if (pid != 0)
+      continue;
+    gentillesse = fils * (20 / (NB_FILS - 1));
+    if (nice(gentillesse) < 0)
+    {
+      perror("Erreur á l'appel de nice()");
+      exit(1);
+    }
+    /* Attente signal de démarrage */
+    pause();
+    /* Comptage */
+    while (1)
+      compteur++;
+  }
+  /* processus pere */
+  signal(SIGUSR1, SIG_IGN);
+  sleep(1);
+  kill(-getpgid(0), SIGUSR1);
+  sleep(5);
+  kill(-getpgid(0), SIGUSR1);
+  while (wait(NULL) > 0)
+    ;
+
+  exit(0);
 }
