@@ -1,63 +1,41 @@
-#define _GNU_SOURCE
-#include <signal.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
-#define NB_FILS 5
-
-volatile long compteur = 0;
-
-static int gentillesse;
-
-void gestionnaire(void)
+void syntaxe(char *nom)
 {
-  if (compteur != 0)
-  {
-    fprintf(stdout, "Fils %u (nice %u) Compteur = %9ld\n", getpid(), gentillesse, compteur);
-    exit(0);
-  }
+  fprintf(stderr, "Syntaxe %s PID \n", nom);
+  exit(1);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+  int ordonnancement;
   pid_t pid;
-  int fils;
 
-  /* Création d'un nouveau groupe de processus */
-  setpgid(0, 0);
-
-  signal(SIGUSR1, gestionnaire);
-  for (fils = 0; fils < NB_FILS; fils++)
+  if ((argc != 2) || (sscanf(argv[1], "%d", &pid) != 1))
+    syntaxe(argv[0]);
+  if ((ordonnancement = sched_getscheduler(pid)) < 0)
   {
-    if ((pid = fork()) < 0)
-    {
-      perror("Erreur á l'appel de fork()");
-      exit(1);
-    }
-    if (pid != 0)
-      continue;
-    gentillesse = fils * (20 / (NB_FILS - 1));
-    if (nice(gentillesse) < 0)
-    {
-      perror("Erreur á l'appel de nice()");
-      exit(1);
-    }
-    /* Attente signal de démarrage */
-    pause();
-    /* Comptage */
-    while (1)
-      compteur++;
+    perror("Erreur á l'appel de la fonction sched_getscheduler");
+    exit(1);
   }
-  /* processus pere */
-  signal(SIGUSR1, SIG_IGN);
-  sleep(1);
-  kill(-getpgid(0), SIGUSR1);
-  sleep(5);
-  kill(-getpgid(0), SIGUSR1);
-  while (wait(NULL) > 0)
-    ;
+  switch (ordonnancement)
+  {
+  case SCHED_RR:
+    fprintf(stdout, "RR \n");
+    break;
+  case SCHED_FIFO:
+    fprintf(stdout, "FIFO.\n");
+    break;
+  case SCHED_OTHER:
+    fprintf(stdout, "OTHER.\n");
+    break;
+  default:
+    fprintf(stdout, "???\n");
+    break;
+  }
 
-  exit(0);
+  return 0;
 }
