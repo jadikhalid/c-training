@@ -1,41 +1,27 @@
-#include <sched.h>
+#define _GNU_SOURCE
+
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-void syntaxe(char *nom)
+#define NB_THREADS 5
+
+void *fn_thread(void *numero);
+
+static int compteur = 0;
+
+int main(void)
 {
-  fprintf(stderr, "Syntaxe %s PID \n", nom);
-  exit(1);
-}
+  pthread_t thread[NB_THREADS];
+  int i;
+  int ret;
 
-int main(int argc, char *argv[])
-{
-  int ordonnancement;
-  pid_t pid;
-
-  if ((argc != 2) || (sscanf(argv[1], "%d", &pid) != 1))
-    syntaxe(argv[0]);
-  if ((ordonnancement = sched_getscheduler(pid)) < 0)
-  {
-    perror("Erreur á l'appel de la fonction sched_getscheduler");
-    exit(1);
-  }
-  switch (ordonnancement)
-  {
-  case SCHED_RR:
-    fprintf(stdout, "RR \n");
-    break;
-  case SCHED_FIFO:
-    fprintf(stdout, "FIFO.\n");
-    break;
-  case SCHED_OTHER:
-    fprintf(stdout, "OTHER.\n");
-    break;
-  default:
-    fprintf(stdout, "???\n");
-    break;
-  }
-
-  return 0;
+  for (i = 0; i < NB_THREADS; i++)
+    if ((ret = pthread_create(&thread[i], NULL, fn_thread, (void *)i)) != 0)
+    {
+      fprintf(stderr, "%s", strerror(ret));
+      exit(1);
+    }
 }
