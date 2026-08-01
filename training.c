@@ -6,9 +6,9 @@
 #include <stdint.h>
 #include <errno.h>
 
-void *fn_thread(void *inutile)
+void *fn_thread(void *inutile00)
 {
-  (void)inutile;
+  (void)inutile00;
   char chaine[128];
   int i = 0;
   fprintf(stdout, "Thread : entrez un nombre :");
