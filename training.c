@@ -1,29 +1,20 @@
 #include <stdio.h>
 #include <string.h>
 
-void affiche_resultats(unsigned char *bloc_1, unsigned char *bloc_2, unsigned int lg)
-{
-    unsigned int i;
-    fprintf(stdout, "bloc_1 = ");
-    for (i = 0; i < lg; i++)
-        fprintf(stdout, "%02d ", bloc_1[i]);
-    fprintf(stdout, "\n");
-    fprintf(stdout, "bloc_2 = ");
-    for (i = 0; i < lg; i++)
-        fprintf(stdout, "%02d ", bloc_2[i]);
-    fprintf(stdout, "\n");
-    fprintf(stdout, "memcmp (bloc1, bloc2, %d)= %d\n", lg, memcmp(bloc_1, bloc_2, lg));
-    fprintf(stdout, "\n");
-}
+#define LG_MAXI 32
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    unsigned char bloc_1[4] = {0x01, 0x02, 0x03, 0x04};
-    unsigned char bloc_2[4] = {0x01, 0x02, 0x08, 0x04};
-    unsigned char bloc_3[4] = {0x01, 0x00, 0x03, 0x04};
-    affiche_resultats(bloc_1, bloc_1, 4);
-    affiche_resultats(bloc_1, bloc_2, 4);
-    affiche_resultats(bloc_1, bloc_3, 4);
+    int i;
+    unsigned long int taille;
+    char chaine[LG_MAXI + 1];
+    strcpy(chaine, "Arguments : ");
+    for (i = 1; i < argc; i++)
+    {
+        taille = strlen(chaine);
+        strncat(chaine, argv[i], LG_MAXI - taille);
+    }
+    fprintf(stdout, "%s\n", chaine);
 
     return 0;
 }
