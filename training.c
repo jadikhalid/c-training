@@ -1,72 +1,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
 
-typedef struct
+#define LG_MAXI 256
+
+int main(void)
 {
-    char *originale;
-    char *modifiee;
-} element_t;
+    char *ligne;
+    char *champs;
+    int l, c;
 
-int compare_elements(const void *objet_1, const void *objet_2)
-{
-    element_t *elem_1 = (element_t *)objet_1;
-    element_t *elem_2 = (element_t *)objet_2;
-
-    return (strcmp(elem_1->modifiee, elem_2->modifiee));
-}
-
-void trie_table_mot(int nb_mots, char *table_mots[])
-{
-    element_t *table_elements;
-    size_t taille;
-    int i;
-
-    table_elements = (element_t *)calloc((size_t)nb_mots, sizeof(element_t));
-    if (table_elements == NULL)
+    if ((ligne = (char *)malloc(LG_MAXI)) == NULL)
     {
-        perror("calloc");
+        perror("malloc");
         exit(1);
     }
 
-    for (i = 0; i < nb_mots; i++)
-    {
-        table_elements[i].originale = table_mots[i];
-        taille = strxfrm(NULL, table_elements[i].originale, 0);
+    l = 1;
 
-        table_elements[i].modifiee = (char *)malloc(taille + 1);
-        if (table_elements[i].modifiee == NULL)
+    // Boucle sur chaque ligne de stdin
+    while (fgets(ligne, LG_MAXI, stdin) != NULL)
+    {
+        fprintf(stdout, "--- Ligne %d ---\n", l);
+        c = 1;
+
+        // Premier appel à strtok sur la ligne
+        champs = strtok(ligne, " \t\r\n");
+
+        // Boucle sur chaque mot/champ de la ligne
+        while (champs != NULL)
         {
-            perror("malloc");
-            exit(1);
+            printf("  Champ %d : %s\n", c, champs);
+            c++;
+            // Appels suivants avec NULL
+            champs = strtok(NULL, " \t\r\n");
         }
-        // Correction : on passe taille + 1 pour inclure le '\0'
-        strxfrm(table_elements[i].modifiee, table_elements[i].originale, taille + 1);
+
+        l++; // Incrémentation correcte après chaque ligne
     }
 
-    qsort(table_elements, (size_t)nb_mots, sizeof(element_t), compare_elements);
-
-    for (i = 0; i < nb_mots; i++)
-    {
-        fprintf(stdout, "%s\n", table_elements[i].originale);
-        free(table_elements[i].modifiee); // Libération propre de chaque chaîne transformée
-    }
-
-    // Suppression de la ligne erronée "free(table_elements[i].modifiee);" qui était hors de la boucle
-
-    // Libération du tableau principal d'éléments
-    free(table_elements);
-}
-
-int main(int argc, char *argv[])
-{
-    setlocale(LC_ALL, "");
-    if (argc < 2)
-    {
-        fprintf(stderr, "Ayntaxe : %s mots...\n", argv[0]);
-        exit(1);
-    }
-    trie_table_mot(argc - 1, &(argv[1]));
+    free(ligne); // Bonne pratique : libérer la mémoire
     return 0;
 }
