@@ -1,90 +1,34 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <search.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int compare_char(const void *lm1, const void *lm2)
+void ajoute_entree(char *francais, char *anglais)
 {
-    return (strcmp(lm1, lm2));
-}
+    ENTRY entree;
+    ENTRY *resultat;
 
-static VISIT type_parcours;
+    entree.key = strdup(francais);
+    entree.data = strdup(anglais);
 
-void parcours(const void *noeud, const VISIT methode, const int profondeur)
-{
-    (void)profondeur;
-    if (methode == type_parcours)
-        fprintf(stdout, "%s ", *(char **)noeud);
-    else if (methode == leaf)
-        fprintf(stdout, "(%s) ", *(char **)noeud);
-}
+    if (entree.key == NULL || entree.data == NULL)
+    {
+        perror("strdup");
+        free(entree.key);
+        free(entree.data);
+        exit(EXIT_FAILURE);
+    }
 
-int main(void)
-{
-    int i;
-    void *racine = NULL;
-    char *chaines[] = {
-        "A",
-        "Z",
-        "E",
-        "R",
-        "T",
-        "Y",
-        "U",
-        "I",
-        "O",
-        "P",
-        "Q",
-        "S",
-        "D",
-        "F",
-        "G",
-        "H",
-        "J",
-        "K",
-        "L",
-        "M",
-        "W",
-        "X",
-        "C",
-        "V",
-        "B"
-        "N",
-        NULL,
-    };
-    /* Insertion des chaines dans l'arbre binaire */
-    for (i = 0; chaines[i] != NULL; i++)
-        if (tsearch(chaines[i], &racine, compare_char) == NULL)
-        {
-            perror("tsearch");
-            exit(1);
-        }
-    for (i = 0; chaines[i] != NULL; i++)
-        if (tfind(chaines[i], &racine, compare_char) == NULL)
-        {
-            fprintf(stderr, "%s perdue ?\n", chaines[i]);
-            exit(1);
-        }
-    fprintf(stdout, "Parcours preorder (+leaf) : \n");
-    type_parcours = preorder;
-    twalk(racine, parcours);
+    resultat = hsearch(entree, ENTER);
 
-    fprintf(stdout, "\n");
-
-    fprintf(stdout, "Parcours postorder (+leaf) : \n ");
-    type_parcours = postorder;
-    twalk(racine, parcours);
-    fprintf(stdout, "\n");
-
-    fprintf(stdout, "Pacours endorder (+leaf) : \n");
-    type_parcours = endorder;
-    twalk(racine, parcours);
-    fprintf(stdout, "\n");
-
-    fprintf(stdout, "Parcours Leaf : \n");
-    type_parcours = leaf;
-    twalk(racine, parcours);
-    fprintf(stdout, "\n");
-
-    return 0;
+    if (resultat == NULL)
+    {
+        perror("hsearch (table pleine ou non initialisée)");
+        // LIBÉRATION OBLIGATOIRE avant de quitter !
+        free(entree.key);
+        free(entree.data);
+        exit(EXIT_FAILURE);
+    }
 }
