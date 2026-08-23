@@ -1,34 +1,36 @@
-#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
 
 #include <search.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-void ajoute_entree(char *francais, char *anglais)
+void ajoute_entree(char *nom, int numero, struct hsearch_data *table)
 {
     ENTRY entree;
-    ENTRY *resultat;
+    ENTRY *retour;
 
-    entree.key = strdup(francais);
-    entree.data = strdup(anglais);
-
-    if (entree.key == NULL || entree.data == NULL)
+    entree.key = strdup(nom);
+    ;
+    entree.data = (char *)numero;
+    if (hsearch_r(entree, ENTER, &retour, table) == 0)
     {
-        perror("strdup");
-        free(entree.key);
-        free(entree.data);
-        exit(EXIT_FAILURE);
+        perror("hsearch_r");
+        exit(1);
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    struct hsearch_data table;
+    int i;
+    ENTRY entree;
+    ENTRY *trouve;
+
+    if (argc < 2)
+    {
+        fprintf(stderr, "Syntaxe : %s nom-departement \n", argv[0]);
+        exit(1);
     }
 
-    resultat = hsearch(entree, ENTER);
-
-    if (resultat == NULL)
-    {
-        perror("hsearch (table pleine ou non initialisée)");
-        // LIBÉRATION OBLIGATOIRE avant de quitter !
-        free(entree.key);
-        free(entree.data);
-        exit(EXIT_FAILURE);
-    }
+    memset(&table, 0, sizeof(table));
 }
