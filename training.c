@@ -1,36 +1,27 @@
-#define _GNU_SOURCE
-
-#include <search.h>
 #include <stdio.h>
-#include <string.h>
 
-void ajoute_entree(char *nom, int numero, struct hsearch_data *table)
+void ouverture(char *nom, char *mode)
 {
-    ENTRY entree;
-    ENTRY *retour;
-
-    entree.key = strdup(nom);
-    ;
-    entree.data = (char *)numero;
-    if (hsearch_r(entree, ENTER, &retour, table) == 0)
+    FILE *fp;
+    fprintf(stdout, "fopen(%s,%s)\n", nom, mode);
+    if ((fp = fopen(nom, mode)) == NULL)
     {
-        perror("hsearch_r");
-        exit(1);
+        perror("fopen");
+    }
+    else
+    {
+        fprintf(stdout, "ok\n");
+        fclose(fp);
     }
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
-    struct hsearch_data table;
-    int i;
-    ENTRY entree;
-    ENTRY *trouve;
+    ouverture("/etc/inittab", "r");
+    ouverture("/etc/inittab", "w");
+    ouverture("essai.fopen", "r");
+    ouverture("essai.fopen", "w");
+    ouverture("/etc/inittab", "r");
 
-    if (argc < 2)
-    {
-        fprintf(stderr, "Syntaxe : %s nom-departement \n", argv[0]);
-        exit(1);
-    }
-
-    memset(&table, 0, sizeof(table));
+    return 0;
 }
