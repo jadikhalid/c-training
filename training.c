@@ -1,18 +1,16 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 int main(void)
 {
-    char chaine[10];
-    fprintf(stdout, "1 stdout : ligne  \n");
-    sleep(5);
-    fprintf(stdout, "2 stdout ligne seule");
-    fprintf(stderr, "\n3 stderr avant fflush (stdout)\n");
-    fflush(stdout);
-    fprintf(stderr, "\n 4 stderr après fflush(stdout)\n");
-    fprintf(stdout, "5 stdout : ligne seule ");
-    fprintf(stderr, "\n6 stderr avant fgets(stdin)\n");
-    fgets(chaine, 10, stdin);
-    fprintf(stderr, "\n7 stderr après fgets(stdin)\n");
-    return (0);
+    int fd;
+    if ((fd = open("essai.open", O_RDWR | O_CREAT | O_EXCL, 0777)) < 0)
+        perror("open");
+    else
+        close(fd);
+
+    return 0;
 }
