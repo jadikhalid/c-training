@@ -1,24 +1,37 @@
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <strings.h>
 #include <unistd.h>
-#include <sys/types.h>
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    int etat;
-    etat = fcntl(STDIN_FILENO, F_GETFL) & O_ACCMODE;
-    fprintf(stderr, "stdin : %s\n", (etat == O_RDWR) ? "R/W" : (etat == O_RDONLY) ? "R"
-                                                                                  : "W");
-    etat = fcntl(STDOUT_FILENO, F_GETFL) & O_ACCMODE;
-    fprintf(stderr, "stdout : %s\n", (etat == O_RDWR) ? "R/W" : (etat == O_RDONLY) ? "R"
-                                                                                   : "W");
-
-    etat = fcntl(STDERR_FILENO, F_GETFL) & O_ACCMODE;
-    fprintf(stderr, "stderr : %s\n", (etat == O_RDWR) ? "R/W" : (etat == O_RDONLY) ? "R"
-                                                                                   : "W");
-
-    return 0;
+    char chaine[80];
+    int fd;
+    struct flock flock;
+    if (argc != 2)
+    {
+        fprintf(stderr, "Syntaxe : %s nom fichier \n", argv[0]);
+        exit(1);
+    }
+    fd = open(argv[1], O_RDWR | O_CREAT | O_EXCL, 02644);
+    if (fd < 0)
+    {
+        perror("open");
+        exit(1);
+    }
+    write(fd, "ABCDEFGHIJ", 10);
+    flock.l_type = F_WRLCK;
+    flock.l_start = 0;
+    flock.l_whence = SEEK_SET;
+    flock.l_len = 10;
+    if (fcntl(fd, F_SETLK, &flock) < 0)
+    {
+        perror("fcntl");
+        exit(1);
+    }
+    fprintf(stdout, "Verrou installé \n");
+    fgets(chaine, 80, stdin);
+    close(fd);
+    return (0);
 }
