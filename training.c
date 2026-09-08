@@ -1,37 +1,22 @@
+#define _XOPEN_SOURCE 700
 
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <sys/param.h>
 
 int main(int argc, char *argv[])
 {
-    char chaine[80];
-    int fd;
-    struct flock flock;
-    if (argc != 2)
+    char chemin_complet[MAXPATHLEN];
+    int i;
+
+    for (i = 0; i < argc; i++)
     {
-        fprintf(stderr, "Syntaxe : %s nom fichier \n", argv[0]);
-        exit(1);
+        fprintf(stderr, "%s ", argv[i]);
+        if (realpath(argv[i], chemin_complet) == NULL)
+            perror("realpath");
+        else
+            fprintf(stderr, "%s\n", chemin_complet);
     }
-    fd = open(argv[1], O_RDWR | O_CREAT | O_EXCL, 02644);
-    if (fd < 0)
-    {
-        perror("open");
-        exit(1);
-    }
-    write(fd, "ABCDEFGHIJ", 10);
-    flock.l_type = F_WRLCK;
-    flock.l_start = 0;
-    flock.l_whence = SEEK_SET;
-    flock.l_len = 10;
-    if (fcntl(fd, F_SETLK, &flock) < 0)
-    {
-        perror("fcntl");
-        exit(1);
-    }
-    fprintf(stdout, "Verrou installé \n");
-    fgets(chaine, 80, stdin);
-    close(fd);
-    return (0);
+
+    return 0;
 }
