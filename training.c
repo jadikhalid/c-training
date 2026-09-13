@@ -1,41 +1,43 @@
-#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-int main(int argc, char *argv[])
+int main(void)
 {
-    if (argc < 3)
+    FILE *fp;
+    char chaine[27];
+
+    fprintf(stdout, "Création fichier\n");
+    fp = fopen("essai.unlink", "w+");
+    if (fp == NULL)
     {
-        fprintf(stderr, "Syntaxe : %s <chemin_jail> <commande> [args...]\n", argv[0]);
+        perror("fopen");
         exit(1);
     }
-
-    // 1. Verrouiller la nouvelle racine (nécessite d'être root)
-    if (chroot(argv[1]) != 0)
+    fprintf(fp, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    fflush(fp);
+    system("ls -l essai.unlink");
+    fprintf(stdout, "effacement fichier\n");
+    if (unlink("essai.unlink") < 0)
     {
-        perror("chroot");
+        perror("unlink");
         exit(1);
     }
-
-    // 2. Se placer à la racine de la nouvelle prison
-    if (chdir("/") != 0)
+    system("ls -l essai.unlink");
+    fprintf(stdout, "Relecture du contenu du fichier\n");
+    if (fseek(fp, 0, SEEK_SET) < 0)
     {
-        perror("chdir");
+        perror("fseek");
         exit(1);
     }
-
-    // 3. Abandonner les privilèges root (revenir à l'UID réel)
-    if (seteuid(getuid()) < 0)
+    if (fgets(chaine, 27, fp) == NULL)
     {
-        perror("seteuid");
+        perror("fgets");
         exit(1);
     }
+    fprintf(stdout, "Lu : %s\n", chaine);
+    fprintf(stdout, "Fermeture fichier\n");
+    fclose(fp);
 
-    // 4. Remplacer l'image du processus par la commande ciblée
-    execvp(argv[2], argv + 2);
-
-    // Si execvp retourne, c'est qu'il y a eu une erreur
-    perror("execvp");
-    return 1;
+    return 0;
 }
