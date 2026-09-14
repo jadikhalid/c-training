@@ -1,43 +1,42 @@
+#define _DEFAULT_SOURCE
+
+#include <dirent.h>
+#include <fnmatch.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
-int main(void)
+static char *motif = NULL;
+
+int fn_selection(const struct dirent *entree)
 {
-    FILE *fp;
-    char chaine[27];
+    if (fnmatch(motif, entree->d_name, FNM_PATHNAME | FNM_PERIOD) == 0)
+        return 1;
+    return 0;
+}
 
-    fprintf(stdout, "Création fichier\n");
-    fp = fopen("essai.unlink", "w+");
-    if (fp == NULL)
+int main(int argc, char *argv[])
+{
+    struct dirent **liste;
+    int nb_entrees;
+    int i;
+    if (argc != 3)
     {
-        perror("fopen");
+        fprintf(stderr, "Syntaxe : %s repertoire motif\n", argv[0]);
         exit(1);
     }
-    fprintf(fp, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    fflush(fp);
-    system("ls -l essai.unlink");
-    fprintf(stdout, "effacement fichier\n");
-    if (unlink("essai.unlink") < 0)
+    motif = argv[2];
+    nb_entrees = scandir(argv[1], &liste, fn_selection, alphasort);
+
+    if (nb_entrees <= 0)
+        return 0;
+    for (i = 0; i < nb_entrees; i++)
     {
-        perror("unlink");
-        exit(1);
+        fprintf(stdout, " %s\n", liste[i]->d_name);
+        free(liste[i]);
     }
-    system("ls -l essai.unlink");
-    fprintf(stdout, "Relecture du contenu du fichier\n");
-    if (fseek(fp, 0, SEEK_SET) < 0)
-    {
-        perror("fseek");
-        exit(1);
-    }
-    if (fgets(chaine, 27, fp) == NULL)
-    {
-        perror("fgets");
-        exit(1);
-    }
-    fprintf(stdout, "Lu : %s\n", chaine);
-    fprintf(stdout, "Fermeture fichier\n");
-    fclose(fp);
+
+    fprintf(stdout, "\n");
+    free(liste);
 
     return 0;
 }
