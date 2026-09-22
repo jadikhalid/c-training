@@ -1,42 +1,46 @@
-#define _DEFAULT_SOURCE
-
-#include <dirent.h>
-#include <fnmatch.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <wordexp.h>
+#include <sys/wait.h>
 
-static char *motif = NULL;
-
-int fn_selection(const struct dirent *entree)
+void affiche_erreur(int numero)
 {
-    if (fnmatch(motif, entree->d_name, FNM_PATHNAME | FNM_PERIOD) == 0)
-        return 1;
-    return 0;
+    switch ((numero))
+    {
+    case WRDE_BADCHAR:
+        fprintf(stderr, "Caractere interdit \n");
+        break;
+    case WRDE_BADVAL:
+        fprintf(stderr, "Variable indéfinie \n");
+        break;
+    case WRDE_CMDSUB:
+        fprintf(stderr, "Invocation de commande interdite \n");
+        break;
+    case WRDE_NOSPACE:
+        fprintf(stderr, "Pas assez de mémoire \n");
+        break;
+    case WRDE_SYNTAX:
+        fprintf(stderr, "Erreur de syntaxe \n");
+        break;
+    default:
+        break;
+    }
 }
 
-int main(int argc, char *argv[])
+#define LG_LINE 256
+
+int main(void)
 {
-    struct dirent **liste;
-    int nb_entrees;
-    int i;
-    if (argc != 3)
+    char ligne[LG_LINE];
+    wordexp_t mots;
+    int erreur;
+    pid_t pid;
+    while (1)
     {
-        fprintf(stderr, "Syntaxe : %s repertoire motif\n", argv[0]);
-        exit(1);
+        /* Lecture de la commande */
+        fprintf(stdout, "-> ");
+        if (fgets(ligne, LG_LINE, stdin) == NULL)
+            break;
     }
-    motif = argv[2];
-    nb_entrees = scandir(argv[1], &liste, fn_selection, alphasort);
-
-    if (nb_entrees <= 0)
-        return 0;
-    for (i = 0; i < nb_entrees; i++)
-    {
-        fprintf(stdout, " %s\n", liste[i]->d_name);
-        free(liste[i]);
-    }
-
-    fprintf(stdout, "\n");
-    free(liste);
-
-    return 0;
 }
