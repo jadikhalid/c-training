@@ -1,68 +1,59 @@
 #define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/stat.h>
 
-void affiche_status(struct stat *status)
+void lecture_contenu(const char *nom)
 {
-    if (S_ISBLK(status->st_mode))
-        fprintf(stderr, "bloc ");
-    else if (S_ISCHR(status->st_mode))
-        fprintf(stderr, "Caractere ");
-    else if (S_ISDIR(status->st_mode))
-        fprintf(stderr, "Repertoire ");
-    else if (S_ISFIFO(status->st_mode))
-        fprintf(stderr, "fifo ");
-    else if (S_ISLNK(status->st_mode))
-        fprintf(stderr, "Lien ");
-    else if (S_ISREG(status->st_mode))
-        fprintf(stderr, "fichier ");
-    else if (S_ISSOCK(status->st_mode))
-        fprintf(stderr, "socket ");
-    fprintf(stderr, "u:");
-    fprintf(stderr, "%zd\n", status->st_size);
-    // fprintf(stderr, status->st_size & S_IWUSR ? "w" : "-");
-    // fprintf(stderr, status->st_size & S_IXUSR ? "x" : "-");
-    // fprintf(stderr, " g:");
-    // fprintf(stderr, status->st_size & S_IRGRP ? "r" : "-");
-    // fprintf(stderr, status->st_size & S_IWGRP ? "w" : "-");
-    // fprintf(stderr, status->st_size & S_IXGRP ? "x" : "-");
-    // fprintf(stderr, " o:");
-    // fprintf(stderr, status->st_size & S_IROTH ? "r" : "-");
-    // fprintf(stderr, status->st_size & S_IWOTH ? "w" : "-");
-    // fprintf(stderr, status->st_size & S_IXOTH ? "x" : "-");
-    // fprintf(stderr, "\n");
+    char *buffer = NULL;
+    char *nouveau = NULL;
+    size_t taille = 0;
+    ssize_t nb_copies;
+
+    while (1)
+    {
+        taille += 16;
+        nouveau = realloc(buffer, taille);
+        if (nouveau == NULL)
+        {
+            perror("realloc");
+            break;
+        }
+        buffer = nouveau;
+
+        nb_copies = readlink(nom, buffer, taille - 1);
+        if (nb_copies == -1)
+        {
+            perror(nom);
+            break;
+        }
+
+        // Si le nombre d'octets lus est strictement inférieur à la capacité du buffer,
+        // cela signifie que tout le chemin cible du lien a été lu.
+        if ((size_t)nb_copies < taille - 1)
+        {
+            buffer[nb_copies] = '\0';
+            printf("%s -> %s\n", nom, buffer);
+            break;
+        }
+    }
+
+    free(buffer);
 }
 
 int main(int argc, char *argv[])
 {
-    struct stat status;
-    int i;
+    if (argc < 2)
+    {
+        fprintf(stderr, "Usage: %s <lien_symbolique1> [lien_symbolique2 ...]\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
-    if (argc == 1)
+    for (int i = 1; i < argc; i++)
     {
-        fprintf(stderr, "stdin : ");
-        if (fstat(STDIN_FILENO, &status) < 0)
-            perror("");
-        else
-            affiche_status(&status);
-        fprintf(stderr, "stdout : ");
-        if (fstat(STDOUT_FILENO, &status) < 0)
-            perror("");
-        else
-            affiche_status(&status);
+        lecture_contenu(argv[i]);
     }
-    else
-    {
-        for (i = 1; i < argc; i++)
-        {
-            fprintf(stderr, "%s : ", argv[i]);
-            if (stat(argv[i], &status) < 0)
-                perror("");
-            else
-                affiche_status(&status);
-        }
-    }
-    return 0;
+
+    return EXIT_SUCCESS;
 }
