@@ -1,59 +1,42 @@
-#define _POSIX_C_SOURCE 200809L
-
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
-void lecture_contenu(const char *nom)
+int main(void)
 {
-    char *buffer = NULL;
-    char *nouveau = NULL;
-    size_t taille = 0;
-    ssize_t nb_copies;
-
-    while (1)
+    int fd;
+    unsigned int masque;
+    masque = umask(0);
+    fprintf(stdout, "Ancien masque = %o, nouveau = 0 \n", masque);
+    fprintf(stdout, "Tentatie de creation de essai.umask \n");
+    fd = open("essai.umask", O_RDWR | O_CREAT | O_EXCL, 0777);
+    if (fd < 0)
     {
-        taille += 16;
-        nouveau = realloc(buffer, taille);
-        if (nouveau == NULL)
-        {
-            perror("realloc");
-            break;
-        }
-        buffer = nouveau;
-
-        nb_copies = readlink(nom, buffer, taille - 1);
-        if (nb_copies == -1)
-        {
-            perror(nom);
-            break;
-        }
-
-        // Si le nombre d'octets lus est strictement inférieur à la capacité du buffer,
-        // cela signifie que tout le chemin cible du lien a été lu.
-        if ((size_t)nb_copies < taille - 1)
-        {
-            buffer[nb_copies] = '\0';
-            printf("%s -> %s\n", nom, buffer);
-            break;
-        }
+        perror("open");
+        exit(1);
     }
+    else
+        close(fd);
+    system("ls -l essai.umask");
+    unlink("essai.umask");
 
-    free(buffer);
-}
+    umask(masque);
 
-int main(int argc, char *argv[])
-{
-    if (argc < 2)
+    fprintf(stdout, "Remise masque = %o \n", masque);
+    fprintf(stdout, "Tentative de creation de essai.umask");
+
+    fd = open("essai.umask", O_RDWR | O_CREAT | O_EXCL, 0777);
+    if (fd < 0)
     {
-        fprintf(stderr, "Usage: %s <lien_symbolique1> [lien_symbolique2 ...]\n", argv[0]);
-        return EXIT_FAILURE;
+        perror("open");
+        exit(1);
     }
+    else
+        close(fd);
+    system("ls -l essai.umask");
+    unlink("essai.umask");
 
-    for (int i = 1; i < argc; i++)
-    {
-        lecture_contenu(argv[i]);
-    }
-
-    return EXIT_SUCCESS;
+    return 0;
 }
