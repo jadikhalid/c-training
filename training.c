@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     if (argc != 2)
     {
-        fprintf(stderr, "La syntaxe est obligatoirement de la forme : %s nom_base\n", argv[0]);
+        fprintf(stderr, "La syntaxe doit obligatoirement etre de la forme : %s nom_base\n", argv[0]);
         exit(1);
     }
 
@@ -58,9 +58,21 @@ static void construit_base(void)
     datum donnee;
     int retour;
 
-    if ((fichier = fopen(fichier_credits, "r")) == NULL)
+    if ((fichier = fopen("fichier_credits", "r")) == NULL)
     {
-        perror(fichier_credits);
+        perror("Erreure d'ouverture du fichier fichier_credits");
         return 1;
+    }
+
+    /* Sauter l'entete */
+    while (1)
+    {
+        if (fgets(ligne, 256, fichier) == NULL)
+            return 1;
+        /* Supprimer commentaires et retours chariot */
+        if ((fin_ligne = strpbrk(ligne, "\n\r#")) != NULL)
+            fin_ligne[0] = '\0';
+        if (strncmp(ligne, "--", 2) == 0)
+            break;
     }
 }
