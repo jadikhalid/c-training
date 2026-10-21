@@ -1,78 +1,65 @@
 #define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gdbm.h>
 
-static void construit_base(void);
+void affiche_contibuteur(datum cle, datum donnee);
 
 int main(int argc, char *argv[])
 {
+    datum cle;
+    datum donnee;
+    char chaine[256];
+    char *fin_chaine;
     GDBM_FILE db;
 
     if (argc != 2)
     {
-        fprintf(stderr, "La syntaxe doit obligatoirement etre de la forme : %s nom_base\n", argv[0]);
+        fprintf(stderr, "Synatxe : %s nom_base\n", argv[0]);
         exit(1);
     }
-
-    /*
-     * Ouverture de la base GDBM moderne.
-     * Paramètres :
-     * - argv[1] : le nom de la base
-     * - 0 : taille de bloc par défaut (0 = optimal choisi par le système)
-     * - GDBM_WRCREAT : ouvre en écriture et crée la base si elle n'existe pas
-     * - 0644 : permissions du fichier (rw-r--r--)
-     * - NULL : fonction de gestion des erreurs fatales par défaut
-     */
     db = gdbm_open(argv[1], 0, GDBM_WRCREAT, 0644, NULL);
-
     if (db == NULL)
     {
-        /* gdbm_strerror permet de récupérer un message d'erreur précis propre à GDBM */
-        fprintf(stderr, "Erreur d'ouverture GDBM pour '%s' : %s\n", argv[1], gdbm_strerror(gdbm_errno));
+        perror("db");
+
         exit(1);
     }
-
-    // ... Votre logique de manipulation de la base ici ...
-    construit_base();
-
-    // N'oubliez pas de fermer proprement la base à la fin !
+    while (1)
+    {
+        fprintf(stdout, "(Nom)> ");
+        if (fgets(chaine, 256, stdin) == NULL)
+            break;
+        if ((fin_chaine = strpbrk(chaine, "\n\r ")) != NULL)
+            *fin_chaine = '\0';
+        if (strlen(chaine) == 0)
+            continue;
+        for (cle = gdbm_firstkey(db); cle.dptr != NULL; cle = gdbm_nextkey(db, cle))
+        {
+            donnee = gdbm_fetch(db, cle);
+            if (donnee.dptr != NULL)
+                if (strstr(donnee.dptr, chaine) != NULL)
+                    affiche_contibuteur(cle, donnee);
+        }
+    }
+    fprintf(stdout, "\n");
     gdbm_close(db);
-
     return 0;
 }
 
-static void construit_base(void)
+void affiche_contibuteur(datum cle, datum donnee)
 {
-    FILE *fichier;
-    char ligne[256];
-    char *fin_ligne;
-    size_t debut_ligne;
-    int i = 0;
-    char *nom = NULL;
-    char *email = NULL;
-    char *web = NULL;
-    char *chaine;
-    datum cle;
-    datum donnee;
-    int retour;
+    char *nom;
+    char *email;
+    char *web;
 
-    if ((fichier = fopen("fichier_credits", "r")) == NULL)
-    {
-        perror("Erreure d'ouverture du fichier fichier_credits");
-        return 1;
-    }
-
-    /* Sauter l'entete */
-    while (1)
-    {
-        if (fgets(ligne, 256, fichier) == NULL)
-            return 1;
-        /* Supprimer commentaires et retours chariot */
-        if ((fin_ligne = strpbrk(ligne, "\n\r#")) != NULL)
-            fin_ligne[0] = '\0';
-        if (strncmp(ligne, "--", 2) == 0)
-            break;
-    }
+    nom = donnee.dptr;
+    email = &(nom[strlen(nom) + 1]);
+    web = &(email[strlen(email) + 1]);
+    fprintf(stdout, "Numero : %d\n", *((int *)cle.dptr));
+    fprintf(stdout, "Nom : %s\n", nom);
+    fprintf(stdout, "Email : %s\n", email);
+    fprintf(stdout, " Web : %s\n", web);
 }
