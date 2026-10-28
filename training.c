@@ -1,36 +1,13 @@
 #define _GNU_SOURCE
-#include <errno.h>
-#include <limits.h>
-#include <locale.h>
+
+#include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 int main(void)
 {
-    char chaine[128];
-    char *debut;
-    char *fin;
-    float retour;
-    setlocale(LC_ALL, "");
-    while (fgets(chaine, 128, stdin) != NULL)
-    {
-        if (chaine[strlen(chaine) - 1] == '\n')
-            chaine[strlen(chaine) - 1] = '\0';
-        for (fin = debut = chaine; *fin != '\0'; debut = fin)
-        {
-            errno = 0;
-            retour = strtof(debut, &fin);
-            if (fin == debut)
-            {
-                fprintf(stdout, "Erreue \n");
-                break;
-            }
-            if (errno == ERANGE)
-                fprintf(stdout, "Débordement ! \n");
-            else
-                fprintf(stdout, "Lu : %f \n", retour);
-        }
-    }
+    double d;
+    d = cos(M_PI / 4) * 2.0;
+    d = d * d - 2.0;
+    fprintf(stdout, "(2*cos(PI/4))2-2 = %e \n", d);
     return 0;
 }
