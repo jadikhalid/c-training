@@ -1,22 +1,47 @@
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
+
+void affiche_nombre(const char *chaine, double d)
+{
+    fprintf(stdout, "%s", chaine);
+    if (isnan(d))
+        fprintf(stdout, "Indéfini \n");
+    else if (isinf(d) == 1)
+        fprintf(stdout, "+ Infini \n");
+    else if (isinf(d) == -1)
+        fprintf(stdout, "- Infini \n");
+    else
+        fprintf(stdout, "%f \n", d);
+}
 
 int main(void)
 {
     double d;
-    double arrondi_inf;
-    double arrondi_sup;
-    double arrondi_proche;
-    int converti;
 
-    printf("reel floor() ceil() rint() (int)\n");
-    for (d = -1.8; d < 1.9; d += 0.2)
-    {
-        arrondi_inf = floor(d);
-        arrondi_sup = ceil(d);
-        arrondi_proche = rint(d);
-        converti = (int)d;
-        printf("%4.1f %4.1f %4.1f %4.1f %2d\n", d, arrondi_inf, arrondi_proche, arrondi_sup, converti);
-    }
+    d = +0.0;
+    d = 1.0 / d;
+    affiche_nombre("1/+0 = ", d);
+
+    d = -0.0;
+    d = 1.0 / d;
+    affiche_nombre("1/-0 = ", d);
+
+    d = 0.0 / 0.0;
+    affiche_nombre("0/0 = ", d);
+
+    d = log(0.0);
+    affiche_nombre("log(0) =", d);
+
+    d = log(-1.0);
+    affiche_nombre("log(-1) =", d);
+
+    d = __FLT_MAX__;
+    affiche_nombre("FLT_MAX =", d);
+
+    d = exp(__FLT_MAX__);
+    affiche_nombre("exp(FLT_MAX)", d);
+
     return 0;
 }
