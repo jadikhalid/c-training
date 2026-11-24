@@ -1,0 +1,26 @@
+# Traduction française pour exemple_gettext
+msgid ""
+msgstr ""
+"Project-Id-Version: exemple_gettext 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-24 09:21+0000\n"
+"PO-Revision-Date: 2026-11-24 09:21+0000\n"
+"Last-Translator: Khalid Jadi <jadikhalid@gmail.com>\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "This is the first string in the first set\n"
+msgstr "Ceci est la première chaîne dans le premier ensemble\n"
+
+msgid "and here is the second string in the first set.\n"
+msgstr "et voici la deuxième chaîne dans le premier ensemble.\n"
+
+msgid "and now let's have a look at the first string in second set,\n"
+msgstr "et maintenant jetons un coup d'œil à la première chaîne dans le deuxième ensemble,\n"
+
+msgid "and finally the second string in the second set.\n"
+msgstr "et enfin la deuxième chaîne dans le deuxième ensemble.\n"

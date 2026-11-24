@@ -1,25 +1,33 @@
-#include <nl_types.h>
+#include <locale.h>
+#include <monetary.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "exemple_catgets.h"
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    nl_catd catalogue;
-    char *chaine;
-    if ((catalogue = catopen("msg_catgets", NL_CAT_LOCALE)) == (nl_catd)-1)
+    double d = 0.0;
+    char buffer[80];
+
+    if (setlocale(LC_ALL, "") == NULL)
     {
-        fprintf(stderr, "Unable to open catalog \n");
-        exit(1);
+        fprintf(stderr, "Avertissement : impossible d'appliquer la locale environnementale.\n");
     }
-    chaine = catgets(catalogue, premier__Set, premier__chaine_1, "This is the first string in the first Set ");
-    fprintf(stdout, "%s \n", chaine);
-    chaine = catgets(catalogue, premier__Set, premier__chaine_2, "and here is the second string in the first Set ");
-    fprintf(stdout, "%s \n", chaine);
-    chaine = catgets(catalogue, second__Set, second__chaine_1, "Now let's have a look at the 1st string in 2nd set");
-    fprintf(stdout, "%s \n", chaine);
-    chaine = catgets(catalogue, second__Set, second__chaine_2, "and finally the second string in the 2nd set");
-    fprintf(stdout, "%s \n", chaine);
-    catclose(catalogue);
-    return 0;
+
+    if ((argc != 3) || (sscanf(argv[2], "%lf", &d) != 1))
+    {
+        fprintf(stderr, "Usage : %s <format> <valeur>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    if (strfmon(buffer, sizeof(buffer), argv[1], d) < 0)
+    {
+#pragma GCC diagnostic pop
+        perror("strfmon");
+        return EXIT_FAILURE;
+    }
+
+    fprintf(stdout, "%s\n", buffer);
+    return EXIT_SUCCESS;
 }
