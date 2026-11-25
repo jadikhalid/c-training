@@ -1,33 +1,19 @@
-#include <locale.h>
-#include <monetary.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-int main(int argc, char *argv[])
+int main(void)
 {
-    double d = 0.0;
-    char buffer[80];
-
-    if (setlocale(LC_ALL, "") == NULL)
+    int tube[2];
+    unsigned char buffer[256];
+    int i;
+    fprintf(stdout, "Création tube \n");
+    if (pipe(tube) != 0)
     {
-        fprintf(stderr, "Avertissement : impossible d'appliquer la locale environnementale.\n");
+        perror("pipe");
+        exit(1);
     }
-
-    if ((argc != 3) || (sscanf(argv[2], "%lf", &d) != 1))
-    {
-        fprintf(stderr, "Usage : %s <format> <valeur>\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-    if (strfmon(buffer, sizeof(buffer), argv[1], d) < 0)
-    {
-#pragma GCC diagnostic pop
-        perror("strfmon");
-        return EXIT_FAILURE;
-    }
-
-    fprintf(stdout, "%s\n", buffer);
-    return EXIT_SUCCESS;
+    for (i = 0; i < 256; i++)
+        buffer[i] = i;
+    fprintf(stdout, "Ecriture dans tube \n");
 }
